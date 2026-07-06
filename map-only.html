@@ -245,6 +245,19 @@ btnLogos.addEventListener('click', () => {
   mapCard.classList.add('show-logos');
   btnLogos.setAttribute('aria-pressed', 'true'); btnNums.setAttribute('aria-pressed', 'false');
 });
+
+/* ---------------------------------------------------------------
+   Responsive embed: report content height to the parent page so an
+   embedding <iframe> can resize to fit (esp. when the layout stacks
+   on mobile). The parent listens for {type:'apac-map-height'}.
+--------------------------------------------------------------- */
+function postHeight() {
+  const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+  parent.postMessage({ type: 'apac-map-height', height: h }, '*');
+}
+window.addEventListener('load', postHeight);
+window.addEventListener('resize', postHeight);
+if (window.ResizeObserver) new ResizeObserver(postHeight).observe(document.body);
 </script>
 </body>
 </html>
