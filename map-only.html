@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CGIAR APAC — Regional Initiatives (Map)</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+  :root {
+    --brand:        #0a6b3b;
+    --brand-dark:   #084c2b;
+    --brand-tint:   #e7f2ec;
+    --accent:       #1f8fd6;
+    --ink:          #1c2b25;
+    --muted:        #5f6f68;
+    --line:         #d9e2dd;
+    --panel-bg:     #ffffff;
+    --shadow:       none;
+    --radius:       .8rem;
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); background: #f6f8f7; line-height: 1.5;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 40px; }
+
+  header.top { margin-bottom: 18px; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--brand); font-weight: 700; margin: 0 0 6px; }
+  h1.title { font-size: clamp(22px, 3vw, 30px); margin: 0 0 4px; font-weight: 800; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0; font-size: 15px; }
+
+  /* ---------- Map + side panel layout ---------- */
+  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 22px; align-items: stretch; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+  .map-card, .side { background: var(--panel-bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .map-card { position: relative; overflow: hidden; min-height: 480px; }
+
+  #map { position: absolute; inset: 0; border-radius: var(--radius); background: #a8d3dd; z-index: 1; }
+  .leaflet-container { font: inherit; background: #a8d3dd; }
+
+  .map-toolbar { position: absolute; top: 14px; left: 14px; right: 14px; z-index: 500; display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none; }
+  .map-toolbar .region-tag { pointer-events: auto; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--brand-dark); padding: 6px 14px; letter-spacing: .03em; }
+  .pin-style-toggle { pointer-events: auto; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .pin-style-toggle button { appearance: none; border: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--muted); padding: 5px 11px; border-radius: 999px; background: transparent; }
+  .pin-style-toggle button[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-dark); }
+
+  /* ---------- Custom map pins ---------- */
+  .pin-marker {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--brand); border: 3px solid #fff;
+    display: grid; place-items: center; color: #fff;
+    font-weight: 800; font-size: 14px; cursor: pointer;
+    transition: transform .16s, background .16s; position: relative;
+  }
+  .pin-marker:hover, .pin-marker.active { background: var(--brand-dark); transform: scale(1.14); }
+  .pin-marker.active::after {
+    content: ""; position: absolute; inset: -8px; border-radius: 50%;
+    border: 2px solid var(--brand); animation: pulse 1.7s ease-out infinite;
+  }
+  @keyframes pulse { 0% { transform: scale(.7); opacity: .7 } 100% { transform: scale(1.9); opacity: 0 } }
+  .pin-marker .pin-logo { display: none; font-size: 9px; letter-spacing: .02em; }
+  .map-card.show-logos .pin-marker .pin-num { display: none; }
+  .map-card.show-logos .pin-marker .pin-logo { display: block; }
+
+  /* ---------- Side panel ---------- */
+  .side { padding: 24px; display: flex; flex-direction: column; }
+  .side .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 10px; }
+  .side h2 { font-size: 22px; margin: 0 0 12px; line-height: 1.25; letter-spacing: -.01em; min-height: 30px; }
+  .side .desc { color: var(--muted); font-size: 15px; margin: 0 0 8px; }
+  .side .meta { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; margin: 6px 0 18px; }
+  .side .chip { background: var(--brand-tint); color: var(--brand-dark); font-weight: 700; padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+
+  .cta-row { margin-top: auto; display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+  .cta { display: inline-flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: .8rem; transition: .18s; }
+  .cta-primary { background: #123528; color: #6ee7b7; border: 1.5px solid #123528; }
+  .cta-primary:hover { background: #0c2419; border-color: #0c2419; transform: translateY(-1px); }
+  .cta-secondary { background: transparent; color: var(--brand); border: 1.5px solid var(--brand); }
+  .cta-secondary:hover { background: var(--brand-tint); transform: translateY(-1px); }
+  .cta svg { width: 16px; height: 16px; }
+  .side .hint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; opacity: .85; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">CGIAR · Asia &amp; the Pacific</p>
+    <h1 class="title">CGIAR in APAC</h1>
+    <p class="sub">Explore flagship regional work — select a pin to see details.</p>
+  </header>
+
+  <div class="layout">
+
+    <div class="map-card" id="mapCard">
+      <div class="map-toolbar">
+        <span class="region-tag">Asia &amp; the Pacific</span>
+        <div class="pin-style-toggle" aria-label="Pin style">
+          <button id="pin-numbers" aria-pressed="true">123</button>
+          <button id="pin-logos" aria-pressed="false">Logos</button>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <!-- SIDE PANEL (dynamic) -->
+    <aside class="side" id="sidePanel" aria-live="polite">
+      <p class="kicker" id="sp-kicker">Regional initiative</p>
+      <h2 id="sp-title"></h2>
+      <p class="desc" id="sp-desc"></p>
+      <div class="meta"><span class="chip" id="sp-chip">Program</span><span id="sp-loc"></span></div>
+      <div class="cta-row">
+        <a class="cta cta-primary" id="sp-cta" href="#" target="_blank" rel="noopener">
+          <span>View related Program</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="cta cta-secondary" id="sp-cta2" href="#" target="_blank" rel="noopener">
+          <span>Explore the region</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <p class="hint">Hover or click a pin to update this panel. All links open existing CGIAR pages.</p>
+    </aside>
+
+  </div>
+
+</div>
+
+<script>
+/* Curated, evergreen pins. Descriptions kept ≤150 chars. coords are real [lat, lng]. */
+const PINS = [
+  { badge: "RICE", coords: [25.6, 85.1],  kicker: "Regional initiative", title: "Rice systems transformation",
+    desc: "Direct-seeded, low-emission rice systems cutting water use and methane across the Eastern Gangetic Plains.",
+    chip: "Program", loc: "India · South Asia",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" },
+  { badge: "FISH", coords: [22.7, 90.4],  kicker: "Regional initiative", title: "Aquatic foods for nutrition",
+    desc: "Resilient small-scale fisheries and aquaculture in the delta — boosting nutrition and rural incomes.",
+    chip: "Program", loc: "Bangladesh delta",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" },
+  { badge: "DX",   coords: [16.0, 108.2], kicker: "Regional initiative", title: "Crop &amp; livestock diagnostics",
+    desc: "Rapid field diagnostics for pests and animal disease, protecting smallholder yields across Southeast Asia.",
+    chip: "Accelerator", loc: "Vietnam · SE Asia",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" },
+  { badge: "SEED", coords: [-7.8, 110.4], kicker: "Regional initiative", title: "Seed systems &amp; genetic gains",
+    desc: "Faster access to climate-adapted, quality seed for smallholders across Indonesia's farming islands.",
+    chip: "Program", loc: "Indonesia",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" }
+];
+
+/* Real world map (Leaflet) — flat cream land over soft-blue ocean, centered on APAC */
+const map = L.map('map', {
+  center: [12, 100], zoom: 4, minZoom: 2, maxZoom: 8,
+  zoomControl: true, scrollWheelZoom: false,
+  maxBounds: [[-62, -200], [83, 200]], maxBoundsViscosity: 1.0
+});
+map.zoomControl.setPosition('bottomright');
+
+L.control.attribution({ position: 'bottomleft', prefix: false })
+  .addAttribution('Boundaries: <a href="https://www.naturalearthdata.com/">Natural Earth</a>')
+  .addTo(map);
+
+const WORLD_STYLE = { fillColor: '#f2efe6', fillOpacity: 1, color: '#ffffff', weight: 0.5, opacity: 0.6 };
+fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json')
+  .then(r => r.json())
+  .then(geo => L.geoJSON(geo, { style: WORLD_STYLE, interactive: false }).addTo(map))
+  .catch(() => {});
+
+/* Side-panel binding */
+const sp = {
+  kicker: document.getElementById('sp-kicker'),
+  title:  document.getElementById('sp-title'),
+  desc:   document.getElementById('sp-desc'),
+  chip:   document.getElementById('sp-chip'),
+  loc:    document.getElementById('sp-loc'),
+  cta:    document.getElementById('sp-cta'),
+  cta2:   document.getElementById('sp-cta2'),
+};
+let activeIdx = 0;
+const markers = [];
+
+function renderPanel(i) {
+  const d = PINS[i];
+  sp.kicker.innerHTML = d.kicker;
+  sp.title.innerHTML  = d.title;
+  sp.desc.innerHTML   = d.desc;
+  sp.chip.innerHTML   = d.chip;
+  sp.loc.textContent  = d.loc;
+  sp.cta.href         = d.cta;
+  sp.cta2.href        = d.cta2;
+}
+function setActive(i) {
+  activeIdx = i;
+  markers.forEach((m, idx) => {
+    const el = m.getElement()?.querySelector('.pin-marker');
+    if (el) el.classList.toggle('active', idx === i);
+  });
+  renderPanel(i);
+}
+
+PINS.forEach((d, i) => {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="pin-marker" role="button" tabindex="0" aria-label="${d.title.replace(/&amp;/g,'&')}, ${d.loc}">
+             <span class="pin-num">${i + 1}</span><span class="pin-logo">${d.badge}</span>
+           </div>`,
+    iconSize: [34, 34], iconAnchor: [17, 17]
+  });
+  const m = L.marker(d.coords, { icon, keyboard: false }).addTo(map);
+  m.on('mouseover', () => renderPanel(i));
+  m.on('mouseout',  () => renderPanel(activeIdx));
+  m.on('click',     () => setActive(i));
+  markers.push(m);
+});
+
+map.whenReady(() => {
+  markers.forEach((m, i) => {
+    const el = m.getElement()?.querySelector('.pin-marker');
+    if (el) el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(i); }
+    });
+  });
+  setActive(0);
+});
+
+map.fitBounds(L.latLngBounds(PINS.map(p => p.coords)).pad(0.35), { maxZoom: 5 });
+
+/* Pin style toggle: numbers <-> logo badges */
+const mapCard = document.getElementById('mapCard');
+const btnNums = document.getElementById('pin-numbers');
+const btnLogos = document.getElementById('pin-logos');
+btnNums.addEventListener('click', () => {
+  mapCard.classList.remove('show-logos');
+  btnNums.setAttribute('aria-pressed', 'true'); btnLogos.setAttribute('aria-pressed', 'false');
+});
+btnLogos.addEventListener('click', () => {
+  mapCard.classList.add('show-logos');
+  btnLogos.setAttribute('aria-pressed', 'true'); btnNums.setAttribute('aria-pressed', 'false');
+});
+</script>
+</body>
+</html>

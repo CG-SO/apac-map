@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CGIAR APAC — Regional Initiatives</title>
+
+<!-- Leaflet (real world map) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+  :root {
+    --brand:        #0a6b3b;
+    --brand-dark:   #084c2b;
+    --brand-tint:   #e7f2ec;
+    --accent:       #1f8fd6;
+    --ink:          #1c2b25;
+    --muted:        #5f6f68;
+    --line:         #d9e2dd;
+    --panel-bg:     #ffffff;
+    --shadow:       none;
+    --radius:       .8rem;
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); background: #f6f8f7; line-height: 1.5;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 56px; }
+
+  /* ---------- Header + toggle ---------- */
+  header.top { margin-bottom: 20px; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--brand); font-weight: 700; margin: 0 0 6px; }
+  h1.title { font-size: clamp(22px, 3vw, 30px); margin: 0 0 4px; font-weight: 800; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0; font-size: 15px; }
+  .toggle { display: inline-flex; margin-top: 18px; padding: 4px; background: #eef2f0; border: 1px solid var(--line); border-radius: 999px; gap: 4px; }
+  .toggle button { appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 600; font-size: 14px; padding: 9px 20px; border-radius: 999px; color: var(--muted); background: transparent; transition: .18s; }
+  .toggle button[aria-selected="true"] { background: var(--brand); color: #fff; }
+  .toggle button:focus-visible { outline: 3px solid rgba(31,143,214,.5); outline-offset: 2px; }
+
+  /* ---------- View switching ---------- */
+  .view { display: none; }
+  .view.active { display: block; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Regional Initiatives layout ---------- */
+  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 22px; align-items: stretch; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+  .map-card, .side { background: var(--panel-bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .map-card { position: relative; overflow: hidden; min-height: 480px; }
+
+  #map { position: absolute; inset: 0; border-radius: var(--radius); background: #a8d3dd; z-index: 1; }
+  .leaflet-container { font: inherit; background: #a8d3dd; }
+
+  .map-toolbar { position: absolute; top: 14px; left: 14px; right: 14px; z-index: 500; display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none; }
+  .map-toolbar .region-tag { pointer-events: auto; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--brand-dark); padding: 6px 14px; letter-spacing: .03em; box-shadow: var(--shadow); }
+  .pin-style-toggle { pointer-events: auto; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; padding: 4px; box-shadow: var(--shadow); }
+  .pin-style-toggle button { appearance: none; border: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--muted); padding: 5px 11px; border-radius: 999px; background: transparent; }
+  .pin-style-toggle button[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-dark); }
+
+  /* ---------- Custom map pins ---------- */
+  .pin-marker {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--brand); border: 3px solid #fff;
+    display: grid; place-items: center; color: #fff;
+    font-weight: 800; font-size: 14px; cursor: pointer;
+    transition: transform .16s, background .16s; position: relative;
+  }
+  .pin-marker:hover, .pin-marker.active { background: var(--brand-dark); transform: scale(1.14); }
+  .pin-marker.active::after {
+    content: ""; position: absolute; inset: -8px; border-radius: 50%;
+    border: 2px solid var(--brand); animation: pulse 1.7s ease-out infinite;
+  }
+  @keyframes pulse { 0% { transform: scale(.7); opacity: .7 } 100% { transform: scale(1.9); opacity: 0 } }
+  .pin-marker .pin-logo { display: none; font-size: 9px; letter-spacing: .02em; }
+  .map-card.show-logos .pin-marker .pin-num { display: none; }
+  .map-card.show-logos .pin-marker .pin-logo { display: block; }
+
+  /* ---------- Side panel ---------- */
+  .side { padding: 24px; display: flex; flex-direction: column; }
+  .side .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 10px; }
+  .side h2 { font-size: 22px; margin: 0 0 12px; line-height: 1.25; letter-spacing: -.01em; min-height: 30px; }
+  .side .desc { color: var(--muted); font-size: 15px; margin: 0 0 8px; }
+  .side .meta { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; margin: 6px 0 18px; }
+  .side .chip { background: var(--brand-tint); color: var(--brand-dark); font-weight: 700; padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+  .cta-row { margin-top: auto; display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+  .cta { display: inline-flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: .8rem; transition: .18s; }
+  .cta-primary { background: #123528; color: #6ee7b7; border: 1.5px solid #123528; }
+  .cta-primary:hover { background: #0c2419; border-color: #0c2419; transform: translateY(-1px); }
+  .cta-secondary { background: transparent; color: var(--brand); border: 1.5px solid var(--brand); }
+  .cta-secondary:hover { background: var(--brand-tint); transform: translateY(-1px); }
+  .cta svg { width: 16px; height: 16px; }
+  .side .hint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; opacity: .85; }
+
+  /* ---------- Portfolio grid ---------- */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .tile { background: var(--panel-bg); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; display: flex; flex-direction: column; min-height: 210px; transition: .18s; }
+  .tile:hover { transform: translateY(-3px); border-color: var(--brand); }
+  .tile .tag { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  .tile h3 { font-size: 18px; margin: 0 0 10px; line-height: 1.3; }
+  .tile p { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+  .tile a.tcta { margin-top: auto; align-self: flex-start; color: var(--brand); font-weight: 700; font-size: 14px; text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+  .tile a.tcta:hover { color: var(--brand-dark); gap: 9px; }
+  .portfolio-note { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+  .explore-row { margin-top: 20px; text-align: center; }
+  .explore-row a { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--brand); color: var(--brand); text-decoration: none; font-weight: 700; padding: 12px 24px; border-radius: .8rem; transition: .18s; }
+  .explore-row a:hover { background: var(--brand); color: #fff; }
+
+  footer.note { margin-top: 28px; font-size: 12.5px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">CGIAR · Asia &amp; the Pacific</p>
+    <h1 class="title">CGIAR in APAC</h1>
+    <p class="sub">Explore flagship regional work on the map, or browse the global CGIAR portfolio.</p>
+
+    <div class="toggle" role="tablist" aria-label="View mode">
+      <button role="tab" id="tab-map" aria-controls="view-map" aria-selected="true">Regional Initiatives</button>
+      <button role="tab" id="tab-portfolio" aria-controls="view-portfolio" aria-selected="false">CGIAR Portfolio</button>
+    </div>
+  </header>
+
+  <!-- ============ VIEW 1: REGIONAL INITIATIVES (MAP + PINS) ============ -->
+  <section class="view active" id="view-map" role="tabpanel" aria-labelledby="tab-map">
+    <div class="layout">
+
+      <div class="map-card" id="mapCard">
+        <div class="map-toolbar">
+          <span class="region-tag">Asia &amp; the Pacific</span>
+          <div class="pin-style-toggle" aria-label="Pin style">
+            <button id="pin-numbers" aria-pressed="true">123</button>
+            <button id="pin-logos" aria-pressed="false">Logos</button>
+          </div>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <!-- SIDE PANEL (dynamic) -->
+      <aside class="side" id="sidePanel" aria-live="polite">
+        <p class="kicker" id="sp-kicker">Regional initiative</p>
+        <h2 id="sp-title"></h2>
+        <p class="desc" id="sp-desc"></p>
+        <div class="meta"><span class="chip" id="sp-chip">Program</span><span id="sp-loc"></span></div>
+        <div class="cta-row">
+          <a class="cta cta-primary" id="sp-cta" href="#" target="_blank" rel="noopener">
+            <span>View related Program</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="cta cta-secondary" id="sp-cta2" href="#" target="_blank" rel="noopener">
+            <span>Explore the region</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <p class="hint">Hover or click a pin to update this panel. All links open existing CGIAR pages.</p>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- ============ VIEW 2: CGIAR PORTFOLIO (TILE GRID) ============ -->
+  <section class="view" id="view-portfolio" role="tabpanel" aria-labelledby="tab-portfolio" hidden>
+    <p class="portfolio-note">Global CGIAR Programs &amp; Accelerators — not geographic. Each tile links out to its existing Program page.</p>
+    <div class="grid" id="portfolioGrid"></div>
+    <div class="explore-row">
+      <a href="https://www.cgiar.org/research/" target="_blank" rel="noopener">
+        Explore all Programs &amp; Accelerators
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <footer class="note">
+    Prototype · Link-out model — no new content is authored here; every CTA points to an existing CGIAR page.
+  </footer>
+
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   DATA — curated, evergreen. Descriptions kept ≤150 chars.
+   `coords` are real [lat, lng]. Swap `cta` for real Program pages.
+--------------------------------------------------------------- */
+const PINS = [
+  { badge: "RICE", coords: [25.6, 85.1],  kicker: "Regional initiative", title: "Rice systems transformation",
+    desc: "Direct-seeded, low-emission rice systems cutting water use and methane across the Eastern Gangetic Plains.",
+    chip: "Program", loc: "India · South Asia",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" },
+  { badge: "FISH", coords: [22.7, 90.4],  kicker: "Regional initiative", title: "Aquatic foods for nutrition",
+    desc: "Resilient small-scale fisheries and aquaculture in the delta — boosting nutrition and rural incomes.",
+    chip: "Program", loc: "Bangladesh delta",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" },
+  { badge: "DX",   coords: [16.0, 108.2], kicker: "Regional initiative", title: "Crop &amp; livestock diagnostics",
+    desc: "Rapid field diagnostics for pests and animal disease, protecting smallholder yields across Southeast Asia.",
+    chip: "Accelerator", loc: "Vietnam · SE Asia",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" },
+  { badge: "SEED", coords: [-7.8, 110.4], kicker: "Regional initiative", title: "Seed systems &amp; genetic gains",
+    desc: "Faster access to climate-adapted, quality seed for smallholders across Indonesia's farming islands.",
+    chip: "Program", loc: "Indonesia",
+    cta: "https://www.cgiar.org/research/", cta2: "https://www.cgiar.org/where-we-work/" }
+];
+
+const PORTFOLIO = [
+  { tag: "Program", title: "Sustainable Farming", desc: "Productive, low-emission farming systems that work for smallholders and the planet.", cta: "https://www.cgiar.org/research/" },
+  { tag: "Program", title: "Food Frontiers &amp; Security", desc: "Safe, nutritious and affordable food for all, from harvest to household.", cta: "https://www.cgiar.org/research/" },
+  { tag: "Program", title: "Genetic Innovation", desc: "Better varieties and breeds delivered faster to the farmers who need them.", cta: "https://www.cgiar.org/research/" },
+  { tag: "Accelerator", title: "Digital Innovation", desc: "Data, AI and advisory tools that put decisions in farmers' hands.", cta: "https://www.cgiar.org/research/" },
+  { tag: "Accelerator", title: "Genebanks", desc: "Safeguarding crop diversity — the raw material for future food security.", cta: "https://www.cgiar.org/research/" },
+  { tag: "Accelerator", title: "Capacity Sharing", desc: "Building the skills and partnerships that scale research into impact.", cta: "https://www.cgiar.org/research/" }
+];
+
+/* ---------------------------------------------------------------
+   Real world map (Leaflet) centered on APAC
+--------------------------------------------------------------- */
+const map = L.map('map', {
+  center: [12, 100], zoom: 4, minZoom: 2, maxZoom: 8,
+  zoomControl: true, scrollWheelZoom: false,
+  maxBounds: [[-62, -200], [83, 200]], maxBoundsViscosity: 1.0
+});
+map.zoomControl.setPosition('bottomright');
+
+/* Flat cartographic basemap — cream land polygons over a soft-blue ocean,
+   no roads or labels, matching the reference locations map.
+   Ocean = the CSS background of #map; land = a GeoJSON country layer.
+   Boundaries: Natural Earth (public domain), served via jsDelivr CDN. */
+L.control.attribution({ position: 'bottomleft', prefix: false })
+  .addAttribution('Boundaries: <a href="https://www.naturalearthdata.com/">Natural Earth</a>')
+  .addTo(map);
+
+const WORLD_STYLE = { fillColor: '#f2efe6', fillOpacity: 1, color: '#ffffff', weight: 0.5, opacity: 0.6 };
+fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json')
+  .then(r => r.json())
+  .then(geo => L.geoJSON(geo, { style: WORLD_STYLE, interactive: false }).addTo(map))
+  .catch(() => {});
+
+/* ---------------------------------------------------------------
+   Side-panel binding
+--------------------------------------------------------------- */
+const sp = {
+  kicker: document.getElementById('sp-kicker'),
+  title:  document.getElementById('sp-title'),
+  desc:   document.getElementById('sp-desc'),
+  chip:   document.getElementById('sp-chip'),
+  loc:    document.getElementById('sp-loc'),
+  cta:    document.getElementById('sp-cta'),
+  cta2:   document.getElementById('sp-cta2'),
+};
+let activeIdx = 0;
+const markers = [];
+
+function renderPanel(i) {
+  const d = PINS[i];
+  sp.kicker.innerHTML = d.kicker;
+  sp.title.innerHTML  = d.title;
+  sp.desc.innerHTML   = d.desc;
+  sp.chip.innerHTML   = d.chip;
+  sp.loc.textContent  = d.loc;
+  sp.cta.href         = d.cta;
+  sp.cta2.href        = d.cta2;
+}
+function setActive(i) {
+  activeIdx = i;
+  markers.forEach((m, idx) => {
+    const el = m.getElement()?.querySelector('.pin-marker');
+    if (el) el.classList.toggle('active', idx === i);
+  });
+  renderPanel(i);
+}
+
+/* Build custom markers at real coordinates */
+PINS.forEach((d, i) => {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="pin-marker" role="button" tabindex="0" aria-label="${d.title.replace(/&amp;/g,'&')}, ${d.loc}">
+             <span class="pin-num">${i + 1}</span><span class="pin-logo">${d.badge}</span>
+           </div>`,
+    iconSize: [34, 34], iconAnchor: [17, 17]
+  });
+  const m = L.marker(d.coords, { icon, keyboard: false }).addTo(map);
+  m.on('mouseover', () => renderPanel(i));
+  m.on('mouseout',  () => renderPanel(activeIdx));
+  m.on('click',     () => setActive(i));
+  markers.push(m);
+});
+
+/* Keyboard support on the pin elements (added after render) */
+map.whenReady(() => {
+  markers.forEach((m, i) => {
+    const el = m.getElement()?.querySelector('.pin-marker');
+    if (el) el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(i); }
+    });
+  });
+  setActive(0);
+});
+
+/* Fit the four pins nicely into view on load */
+map.fitBounds(L.latLngBounds(PINS.map(p => p.coords)).pad(0.35), { maxZoom: 5 });
+
+/* ---------------------------------------------------------------
+   Pin style toggle: numbers <-> logo badges
+--------------------------------------------------------------- */
+const mapCard = document.getElementById('mapCard');
+const btnNums = document.getElementById('pin-numbers');
+const btnLogos = document.getElementById('pin-logos');
+btnNums.addEventListener('click', () => {
+  mapCard.classList.remove('show-logos');
+  btnNums.setAttribute('aria-pressed', 'true'); btnLogos.setAttribute('aria-pressed', 'false');
+});
+btnLogos.addEventListener('click', () => {
+  mapCard.classList.add('show-logos');
+  btnLogos.setAttribute('aria-pressed', 'true'); btnNums.setAttribute('aria-pressed', 'false');
+});
+
+/* ---------------------------------------------------------------
+   Top view toggle: Regional Initiatives <-> CGIAR Portfolio
+--------------------------------------------------------------- */
+const tabMap = document.getElementById('tab-map');
+const tabPort = document.getElementById('tab-portfolio');
+const viewMap = document.getElementById('view-map');
+const viewPort = document.getElementById('view-portfolio');
+
+function selectTab(which) {
+  const mapOn = which === 'map';
+  tabMap.setAttribute('aria-selected', mapOn);
+  tabPort.setAttribute('aria-selected', !mapOn);
+  viewMap.classList.toggle('active', mapOn);
+  viewPort.classList.toggle('active', !mapOn);
+  viewMap.hidden = !mapOn; viewPort.hidden = mapOn;
+  if (mapOn) setTimeout(() => map.invalidateSize(), 50); // re-measure after re-show
+}
+tabMap.addEventListener('click', () => selectTab('map'));
+tabPort.addEventListener('click', () => selectTab('portfolio'));
+
+/* ---------------------------------------------------------------
+   Build portfolio grid (mirrors Program tile UX + CTA logic)
+--------------------------------------------------------------- */
+document.getElementById('portfolioGrid').innerHTML = PORTFOLIO.map(t => `
+  <article class="tile">
+    <p class="tag">${t.tag}</p>
+    <h3>${t.title}</h3>
+    <p>${t.desc}</p>
+    <a class="tcta" href="${t.cta}" target="_blank" rel="noopener">
+      View related Program
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </article>
+`).join('');
+</script>
+</body>
+</html>
