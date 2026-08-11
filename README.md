@@ -77,7 +77,8 @@ Only `pins` is required. Everything else has a sensible default.
   "pins": [                          // REQUIRED — 3–5 works best
     {
       "coords": [-1.29, 36.82],      // REQUIRED — [latitude, longitude]
-      "badge":  "MAIZE",             // short text on the pin in "Logos" mode
+      "badge":  "RICE",              // pin text in "Logos" mode — max 4 characters, or it
+                                     // overflows the pin. Use "logo" for a real image.
       "logo":   "https://…/logo.png",// image instead of badge text (optional)
       "kicker": "Regional initiative",
       "title":  "Drought-tolerant maize",

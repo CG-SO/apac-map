@@ -6,8 +6,8 @@
   },
   "map": {
     "regionLabel": "Latin America & the Caribbean",
-    "center": [-5, -70],
-    "zoom": 3,
+    "center": [8, -80],
+    "zoom": 4,
     "fitToPins": true
   },
   "ui": {
@@ -16,44 +16,34 @@
   },
   "pins": [
     {
-      "coords": [3.44, -76.52],
-      "badge": "BEANS",
-      "kicker": "Regional initiative",
-      "title": "Beans & climate resilience",
-      "desc": "Heat- and drought-tolerant bean varieties safeguarding a staple protein source for the region.",
+      "coords": [14.75, -86.85],
+      "badge": "AGUA",
+      "kicker": "Honduras",
+      "title": "Digital water governance at scale",
+      "desc": "Co-developed with the Government of Honduras, Agua de Honduras provides a digital platform for water-resource management covering 44 percent of the country. The platform has supported the legalization of 110 watershed management councils, strengthening community participation in water governance.",
+      "chip": "Program",
+      "loc": "Honduras · Central America",
+      "primary": { "label": "View related Program", "url": "https://cgspace.cgiar.org/items/cbbe559a-81fb-4e02-bf2f-6ebae08c5338" }
+    },
+    {
+      "coords": [15.50, -90.25],
+      "badge": "CLIM",
+      "kicker": "Guatemala",
+      "title": "Taking climate information the last mile",
+      "desc": "Working with Guatemala's Ministry of Agriculture and national meteorological services, CGIAR supported development of a National Framework for Climate Services and co-created delivery mechanisms bringing tailored climate information to farmers across five departments and 176 communities.",
+      "chip": "Program",
+      "loc": "Guatemala · Central America",
+      "primary": { "label": "View related Program", "url": "https://www.cgiar.org/initiative-result/implementation-of-climate-services-at-national-scale-promotes-behavior-changes-in-the-public-sector-in-guatemala" }
+    },
+    {
+      "coords": [4.57, -74.30],
+      "badge": "LIVE",
+      "kicker": "Colombia",
+      "title": "Lower-emissions cattle production",
+      "desc": "A CGIAR-supported cattle ranch in Colombia achieved 44 percent lower emissions through sustainable grazing practices. The approach attracted US$7.5 million in private investment to support scaling.",
       "chip": "Program",
       "loc": "Colombia · South America",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
-    },
-    {
-      "coords": [19.53, -98.84],
-      "badge": "GRAIN",
-      "kicker": "Regional initiative",
-      "title": "Maize & wheat improvement",
-      "desc": "Breeding and agronomy raising yields and resilience for maize and wheat growers.",
-      "chip": "Program",
-      "loc": "Mexico · North America",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
-    },
-    {
-      "coords": [-12.05, -77.04],
-      "badge": "ROOTS",
-      "kicker": "Regional initiative",
-      "title": "Potato & Andean roots",
-      "desc": "Conserving and improving potato and Andean root crops for nutrition and climate adaptation.",
-      "chip": "Program",
-      "loc": "Peru · Andes",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
-    },
-    {
-      "coords": [14.07, -87.19],
-      "badge": "DX",
-      "kicker": "Regional initiative",
-      "title": "Dry corridor resilience",
-      "desc": "Water-smart practices and early warning helping farming families through recurring drought.",
-      "chip": "Accelerator",
-      "loc": "Honduras · Central America",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
+      "primary": { "label": "View related Program", "url": "https://www.cgiar.org/initiative-result/colombian-cattle-farm-hacienda-san-jose-secures-us7-5-million-investment-supported-by-cgiar-tropical-grass-and-sustainable-livestock-certification-innovations" }
     }
   ]
 }
