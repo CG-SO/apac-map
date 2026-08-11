@@ -473,7 +473,20 @@ function initMap(cfg) {
         el.hidden = true;
       }
     });
-    postHeight();
+  }
+
+  /* Pins have different description lengths, so switching content would change
+     the panel height, resize the iframe, and shift the map out from under the
+     cursor — causing hover flicker. Measure the tallest pin once and lock the
+     panel to it so hovering never changes layout. */
+  function lockPanelHeight() {
+    const panel = $('sidePanel');
+    const keep = activeIdx;
+    panel.style.minHeight = '';
+    let max = 0;
+    pins.forEach((_, i) => { renderPanel(i); max = Math.max(max, panel.scrollHeight); });
+    renderPanel(keep);
+    panel.style.minHeight = (max + 2) + 'px';   // +2 for the hairline border
   }
 
   function setActive(i) {
@@ -521,7 +534,18 @@ function initMap(cfg) {
       });
     });
     setActive(0);
+    lockPanelHeight();
     postHeight();
+    /* Re-measure once webfonts land, and when the viewport crosses a
+       breakpoint (type and spacing are fluid). */
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => { lockPanelHeight(); postHeight(); });
+    }
+    let rt;
+    window.addEventListener('resize', () => {
+      clearTimeout(rt);
+      rt = setTimeout(() => { lockPanelHeight(); postHeight(); }, 200);
+    });
   });
 
   if (mcfg.fitToPins !== false && pins.length > 1) {
@@ -542,8 +566,11 @@ function initMap(cfg) {
 }
 
 /* ---- Responsive embed: report height to the parent iframe ---- */
+let lastPostedHeight = 0;
 function postHeight() {
   const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+  if (Math.abs(h - lastPostedHeight) < 2) return;   // ignore sub-pixel churn
+  lastPostedHeight = h;
   parent.postMessage({ type: 'apac-map-height', height: h }, '*');
 }
 window.addEventListener('load', postHeight);
