@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interactive Map</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+  :root {
+    --brand:        #0a6b3b;
+    --brand-dark:   #084c2b;
+    --brand-tint:   #e7f2ec;
+    --accent:       #1f8fd6;
+    --cta-bg:       #123528;
+    --cta-text:     #6ee7b7;
+    --ink:          #1c2b25;
+    --muted:        #5f6f68;
+    --line:         #d9e2dd;
+    --panel-bg:     #ffffff;
+    --ocean:        #a8d3dd;
+    --land:         #f2efe6;
+    --radius:       .8rem;
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); background: #ffffff; line-height: 1.5;
+  }
+  .wrap { max-width: 100%; margin: 0 auto; padding: 28px 20px 40px; }
+
+  header.top { margin-bottom: 18px; }
+  header.top[hidden] { display: none; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--brand); font-weight: 700; margin: 0 0 6px; }
+  h1.title { font-size: clamp(22px, 3vw, 30px); margin: 0 0 4px; font-weight: 800; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0; font-size: 15px; }
+
+  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 22px; align-items: stretch; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+  .map-card, .side { background: var(--panel-bg); border: 1px solid var(--line); border-radius: var(--radius); }
+  .map-card { position: relative; overflow: hidden; min-height: 480px; }
+
+  #map { position: absolute; inset: 0; border-radius: var(--radius); background: var(--ocean); z-index: 1; }
+  .leaflet-container { font: inherit; background: var(--ocean); }
+
+  .map-toolbar { position: absolute; top: 14px; left: 14px; right: 14px; z-index: 500; display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none; }
+  .region-tag { pointer-events: auto; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--brand-dark); padding: 6px 14px; letter-spacing: .03em; }
+  .region-tag:empty { display: none; }
+  .pin-style-toggle { pointer-events: auto; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .pin-style-toggle[hidden] { display: none; }
+  .pin-style-toggle button { appearance: none; border: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--muted); padding: 5px 11px; border-radius: 999px; background: transparent; }
+  .pin-style-toggle button[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-dark); }
+
+  /* ---------- Pins ---------- */
+  .pin-marker {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--brand); border: 3px solid #fff;
+    display: grid; place-items: center; color: #fff;
+    font-weight: 800; font-size: 14px; cursor: pointer;
+    transition: transform .16s, background .16s; position: relative;
+  }
+  .pin-marker:hover, .pin-marker.active { background: var(--brand-dark); transform: scale(1.14); }
+  .pin-marker.active::after {
+    content: ""; position: absolute; inset: -8px; border-radius: 50%;
+    border: 2px solid var(--brand); animation: pulse 1.7s ease-out infinite;
+  }
+  @keyframes pulse { 0% { transform: scale(.7); opacity: .7 } 100% { transform: scale(1.9); opacity: 0 } }
+  .pin-marker .pin-badge { display: none; font-size: 9px; letter-spacing: .02em; text-align: center; line-height: 1; }
+  .pin-marker .pin-badge img { width: 22px; height: 22px; object-fit: contain; display: block; border-radius: 50%; }
+  .map-card.show-badges .pin-marker .pin-num { display: none; }
+  .map-card.show-badges .pin-marker .pin-badge { display: block; }
+
+  /* ---------- Side panel ---------- */
+  .side { padding: 24px; display: flex; flex-direction: column; }
+  .side .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 10px; }
+  .side .kicker:empty { display: none; }
+  .side h2 { font-size: 22px; margin: 0 0 12px; line-height: 1.25; letter-spacing: -.01em; min-height: 30px; }
+  .side .desc { color: var(--muted); font-size: 15px; margin: 0 0 8px; }
+  .side .meta { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; margin: 6px 0 18px; }
+  .side .chip { background: var(--brand-tint); color: var(--brand-dark); font-weight: 700; padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+  .side .chip:empty { display: none; }
+
+  .cta-row { margin-top: auto; display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+  .cta { display: inline-flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: var(--radius); transition: .18s; }
+  .cta[hidden] { display: none; }
+  .cta-primary { background: var(--cta-bg); color: var(--cta-text); border: 1.5px solid var(--cta-bg); }
+  .cta-primary:hover { filter: brightness(1.25); transform: translateY(-1px); }
+  .cta-secondary { background: transparent; color: var(--brand); border: 1.5px solid var(--brand); }
+  .cta-secondary:hover { background: var(--brand-tint); transform: translateY(-1px); }
+  .cta svg { width: 16px; height: 16px; flex: none; }
+  .side .hint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; opacity: .85; }
+  .side .hint:empty { display: none; }
+
+  .error { padding: 24px; color: #9b1c1c; background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); font-size: 14px; }
+  .error code { background: #fff; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top" id="pageHeader" hidden>
+    <p class="eyebrow" id="hdrEyebrow"></p>
+    <h1 class="title" id="hdrTitle"></h1>
+    <p class="sub" id="hdrSub"></p>
+  </header>
+
+  <div class="layout" id="layout">
+    <div class="map-card" id="mapCard">
+      <div class="map-toolbar">
+        <span class="region-tag" id="regionTag"></span>
+        <div class="pin-style-toggle" id="pinToggle" hidden>
+          <button id="pin-numbers" aria-pressed="true">123</button>
+          <button id="pin-badges" aria-pressed="false">Logos</button>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <aside class="side" id="sidePanel" aria-live="polite">
+      <p class="kicker" id="sp-kicker"></p>
+      <h2 id="sp-title"></h2>
+      <p class="desc" id="sp-desc"></p>
+      <div class="meta"><span class="chip" id="sp-chip"></span><span id="sp-loc"></span></div>
+      <div class="cta-row">
+        <a class="cta cta-primary" id="sp-cta1" href="#" target="_blank" rel="noopener">
+          <span id="sp-cta1-label"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="cta cta-secondary" id="sp-cta2" href="#" target="_blank" rel="noopener">
+          <span id="sp-cta2-label"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <p class="hint" id="sp-hint"></p>
+    </aside>
+  </div>
+
+</div>
+
+<script>
+/* =================================================================
+   GENERIC MAP ENGINE — no data lives in this file.
+   Point it at a JSON file:  map.html?data=data/apac.json
+   See README.md for the JSON format.
+================================================================= */
+
+const $ = id => document.getElementById(id);
+
+/* Which dataset? ?data=<path>. Defaults to data/apac.json */
+const DATA_URL = new URLSearchParams(location.search).get('data') || 'data/apac.json';
+
+/* Only allow http(s)/relative links — blocks javascript: URLs from a data file */
+function safeUrl(u) {
+  if (!u) return '';
+  try {
+    const parsed = new URL(u, location.href);
+    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') ? parsed.href : '';
+  } catch { return ''; }
+}
+
+function showError(msg) {
+  $('layout').innerHTML =
+    '<div class="error"><strong>Map could not load.</strong><br>' + msg + '</div>';
+  postHeight();
+}
+
+fetch(DATA_URL)
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(initMap)
+  .catch(err => showError(
+    'Could not read <code>' + DATA_URL.replace(/</g, '&lt;') + '</code> (' + err.message + ').<br>' +
+    'Check the <code>?data=</code> path and that the JSON is valid.'
+  ));
+
+function initMap(cfg) {
+  const pins  = Array.isArray(cfg.pins) ? cfg.pins : [];
+  const hdr   = cfg.header || {};
+  const mcfg  = cfg.map || {};
+  const ui    = cfg.ui || {};
+
+  if (!pins.length) return showError('The data file contains no <code>pins</code>.');
+
+  /* ---- Header (optional — omit "header" in JSON to hide it entirely) ---- */
+  if (hdr.title || hdr.eyebrow || hdr.subtitle) {
+    $('hdrEyebrow').textContent = hdr.eyebrow || '';
+    $('hdrTitle').textContent   = hdr.title   || '';
+    $('hdrSub').textContent     = hdr.subtitle|| '';
+    $('pageHeader').hidden = false;
+  }
+  if (hdr.title) document.title = hdr.title;
+
+  /* ---- Theme overrides (optional "theme": { "brand": "#0a6b3b", ... }) ---- */
+  Object.entries(cfg.theme || {}).forEach(([k, v]) => {
+    document.documentElement.style.setProperty('--' + k, v);
+  });
+
+  $('regionTag').textContent = mcfg.regionLabel || '';
+  $('sp-hint').textContent   = ui.hint || '';
+
+  /* ---- Map ---- */
+  const map = L.map('map', {
+    center: mcfg.center || [12, 100],
+    zoom: mcfg.zoom || 4,
+    minZoom: 2, maxZoom: 8,
+    zoomControl: true, scrollWheelZoom: false,
+    maxBounds: [[-62, -200], [83, 200]], maxBoundsViscosity: 1.0
+  });
+  map.zoomControl.setPosition('bottomright');
+
+  L.control.attribution({ position: 'bottomleft', prefix: false })
+    .addAttribution('Boundaries: <a href="https://www.naturalearthdata.com/">Natural Earth</a>')
+    .addTo(map);
+
+  const landStyle = { fillColor: getComputedStyle(document.documentElement).getPropertyValue('--land').trim() || '#f2efe6',
+                      fillOpacity: 1, color: '#ffffff', weight: 0.5, opacity: 0.6 };
+  fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json')
+    .then(r => r.json())
+    .then(geo => L.geoJSON(geo, { style: landStyle, interactive: false }).addTo(map))
+    .catch(() => {});
+
+  /* ---- Side panel ---- */
+  let activeIdx = 0;
+  const markers = [];
+
+  function renderPanel(i) {
+    const d = pins[i] || {};
+    $('sp-kicker').textContent = d.kicker || '';
+    $('sp-title').textContent  = d.title  || '';
+    $('sp-desc').textContent   = d.desc   || '';
+    $('sp-chip').textContent   = d.chip   || '';
+    $('sp-loc').textContent    = d.loc    || '';
+
+    [['sp-cta1', d.primary], ['sp-cta2', d.secondary]].forEach(([id, btn]) => {
+      const el = $(id), url = safeUrl(btn && btn.url);
+      if (btn && btn.label && url) {
+        $(id + '-label').textContent = btn.label;
+        el.href = url;
+        el.hidden = false;
+      } else {
+        el.hidden = true;
+      }
+    });
+    postHeight();
+  }
+
+  function setActive(i) {
+    activeIdx = i;
+    markers.forEach((m, idx) => {
+      const el = m.getElement() && m.getElement().querySelector('.pin-marker');
+      if (el) el.classList.toggle('active', idx === i);
+    });
+    renderPanel(i);
+  }
+
+  /* ---- Markers ---- */
+  let anyBadge = false;
+  pins.forEach((d, i) => {
+    const num = i + 1;
+    const badgeHtml = d.logo
+      ? '<img src="' + safeUrl(d.logo) + '" alt="">'
+      : (d.badge ? String(d.badge).replace(/[<>&"]/g, '') : num);
+    if (d.logo || d.badge) anyBadge = true;
+
+    const label = ((d.title || 'Location') + (d.loc ? ', ' + d.loc : '')).replace(/"/g, '');
+    const icon = L.divIcon({
+      className: '',
+      html: '<div class="pin-marker" role="button" tabindex="0" aria-label="' + label + '">' +
+              '<span class="pin-num">' + num + '</span>' +
+              '<span class="pin-badge">' + badgeHtml + '</span>' +
+            '</div>',
+      iconSize: [34, 34], iconAnchor: [17, 17]
+    });
+
+    const m = L.marker(d.coords, { icon, keyboard: false }).addTo(map);
+    m.on('mouseover', () => renderPanel(i));
+    m.on('mouseout',  () => renderPanel(activeIdx));
+    m.on('click',     () => setActive(i));
+    markers.push(m);
+  });
+
+  /* Pin style toggle only appears if the data supplies badges/logos */
+  if (anyBadge && ui.showPinStyleToggle !== false) $('pinToggle').hidden = false;
+
+  map.whenReady(() => {
+    markers.forEach((m, i) => {
+      const el = m.getElement() && m.getElement().querySelector('.pin-marker');
+      if (el) el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(i); }
+      });
+    });
+    setActive(0);
+    postHeight();
+  });
+
+  if (mcfg.fitToPins !== false && pins.length > 1) {
+    map.fitBounds(L.latLngBounds(pins.map(p => p.coords)).pad(0.35),
+                  { maxZoom: mcfg.fitMaxZoom || 6 });
+  }
+
+  /* ---- Numbers <-> badges toggle ---- */
+  const mapCard = $('mapCard'), bN = $('pin-numbers'), bB = $('pin-badges');
+  bN.addEventListener('click', () => {
+    mapCard.classList.remove('show-badges');
+    bN.setAttribute('aria-pressed', 'true'); bB.setAttribute('aria-pressed', 'false');
+  });
+  bB.addEventListener('click', () => {
+    mapCard.classList.add('show-badges');
+    bB.setAttribute('aria-pressed', 'true'); bN.setAttribute('aria-pressed', 'false');
+  });
+  if (ui.defaultPinStyle === 'logos') bB.click();
+}
+
+/* ---- Responsive embed: report height to the parent iframe ---- */
+function postHeight() {
+  const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+  parent.postMessage({ type: 'apac-map-height', height: h }, '*');
+}
+window.addEventListener('load', postHeight);
+window.addEventListener('resize', postHeight);
+if (window.ResizeObserver) new ResizeObserver(postHeight).observe(document.body);
+</script>
+</body>
+</html>
