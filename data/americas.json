@@ -23,8 +23,7 @@
       "desc": "Heat- and drought-tolerant bean varieties safeguarding a staple protein source for the region.",
       "chip": "Program",
       "loc": "Colombia · South America",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [19.53, -98.84],
@@ -34,8 +33,7 @@
       "desc": "Breeding and agronomy raising yields and resilience for maize and wheat growers.",
       "chip": "Program",
       "loc": "Mexico · North America",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [-12.05, -77.04],
@@ -45,8 +43,7 @@
       "desc": "Conserving and improving potato and Andean root crops for nutrition and climate adaptation.",
       "chip": "Program",
       "loc": "Peru · Andes",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [14.07, -87.19],
@@ -56,8 +53,7 @@
       "desc": "Water-smart practices and early warning helping farming families through recurring drought.",
       "chip": "Accelerator",
       "loc": "Honduras · Central America",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     }
   ]
 }

@@ -23,8 +23,7 @@
       "desc": "Climate-adapted maize varieties helping smallholders hold yields through longer, drier seasons.",
       "chip": "Program",
       "loc": "Kenya · East Africa",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [7.38, 3.90],
@@ -34,8 +33,7 @@
       "desc": "Clean planting material and improved varieties reaching cassava farmers faster and more reliably.",
       "chip": "Program",
       "loc": "Nigeria · West Africa",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [9.03, 38.74],
@@ -45,8 +43,7 @@
       "desc": "Vaccines and rapid diagnostics protecting herds, livelihoods and household nutrition.",
       "chip": "Accelerator",
       "loc": "Ethiopia · East Africa",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [7.69, -5.03],
@@ -56,8 +53,7 @@
       "desc": "Higher-yielding, climate-resilient rice systems reducing import dependence across the region.",
       "chip": "Program",
       "loc": "Côte d'Ivoire · West Africa",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
-      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
     }
   ]
 }
