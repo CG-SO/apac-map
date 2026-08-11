@@ -58,7 +58,9 @@ html { font-size: 62.5%; }
   :root { --s5: 2.4rem; --s6: 3.2rem; --s7: 4.8rem; --s8: 6.4rem; --s9: 9.6rem; --s10: 12.8rem; }
 }
 
-/* Brand ramps + theme-dependent radii and focus */
+/* CGIAR brand ramp + radii and focus.
+   The [data-theme]/[data-area] selectors are kept so that linking the real
+   ui.min.css + props-cgiar.css later is a drop-in replacement. */
 [data-theme="cgiar"] {
   --color-brand-5:#e6fff9; --color-brand-10:#9dffe8; --color-brand-20:#58fbd4;
   --color-brand-30:#18f2be; --color-brand-40:#08d9a8; --color-brand-50:#00b389;
@@ -73,36 +75,8 @@ html { font-size: 62.5%; }
   --dimension-border-radius-image: 0;
   --dimension-border-radius-module: 0;
 }
-[data-theme="africarice"] {
-  --color-brand-5:#f8fff5; --color-brand-10:#ffee8d; --color-brand-20:#ffee8d;
-  --color-brand-30:#ffee8d; --color-brand-40:#95dd7d; --color-brand-50:#77bb60;
-  --color-brand-60:#5b9946; --color-brand-70:#427730; --color-brand-80:#0b5823;
-  --color-brand-90:#08481c; --color-brand-99:#001900;
-  --color-dim-base: 0, 246, 0;                    /* #00f600 */
-  --color-focus: #db1616;
-  --dimension-border-radius-button: 0;            /* Africa Rice is fully square */
-  --dimension-border-radius-button-s: 0;
-  --dimension-border-radius-card: 0;
-  --dimension-border-radius-component: .8rem;
-  --dimension-border-radius-image: 0;
-  --dimension-border-radius-module: 0;
-}
-[data-theme="worldfish"] {
-  --color-brand-5:#eef2ff; --color-brand-10:#d6e1ff; --color-brand-20:#adc3ff;
-  --color-brand-30:#85a6ff; --color-brand-40:#5c89ff; --color-brand-50:#336cff;
-  --color-brand-60:#1a4dcc; --color-brand-70:#153999; --color-brand-80:#0b2566;
-  --color-brand-90:#040f33; --color-brand-99:#020716;
-  --color-dim-base: 51, 108, 255;                 /* #336cff */
-  --color-focus: #db1616;
-  --dimension-border-radius-button: .8rem;
-  --dimension-border-radius-button-s: .6rem;
-  --dimension-border-radius-card: .8rem;
-  --dimension-border-radius-component: .8rem;
-  --dimension-border-radius-image: 0;
-  --dimension-border-radius-module: 0;
-}
 
-/* ---------- 2. SEMANTIC TOKENS (remap per data-area) ---------- */
+/* ---------- 2. SEMANTIC TOKENS ---------- */
 
 [data-area="light"] {
   --color-background-solid-neutral-strong:  var(--color-solid-grey-0);
@@ -127,30 +101,6 @@ html { font-size: 62.5%; }
   --color-map-coast: var(--color-solid-grey-40);
   /* primary button: dark surface + bright accent text */
   --color-button-primary-fg: var(--color-brand-20);
-}
-
-[data-area="dark"] {
-  --color-background-solid-neutral-strong:  var(--color-brand-90);
-  --color-background-solid-neutral-default: var(--color-brand-80);
-  --color-background-solid-neutral-subtle:  var(--color-brand-70);
-  --color-background-solid-neutral-hover:   var(--color-brand-60);
-  --color-background-solid-invert-default:  var(--color-solid-grey-10);
-  --color-background-solid-invert-strong:   var(--color-solid-grey-0);
-  --color-background-dim-neutral-default:   rgba(255,255,255,.15);
-  --color-background-dim-neutral-hover:     rgba(255,255,255,.20);
-  --color-foreground-emphasis:              var(--color-solid-grey-0);
-  --color-foreground-default:               var(--color-solid-grey-10);
-  --color-foreground-subtle:                var(--color-solid-grey-30);
-  --color-foreground-solid-accent-default:  var(--color-brand-20);
-  --color-foreground-solid-accent-strong:   var(--color-brand-10);
-  --color-foreground-solid-accent-subtle:   var(--color-brand-40);
-  --color-foreground-invert:                var(--color-brand-90);
-  --color-border-default:                   rgba(255,255,255,.15);
-  --color-map-water: var(--color-brand-90);
-  --color-map-land:  var(--color-brand-80);
-  --color-map-coast: var(--color-brand-70);
-  /* invert-default is a LIGHT surface here, so the label must go dark */
-  --color-button-primary-fg: var(--color-brand-80);
 }
 
 /* ---------- 3. TYPOGRAPHY HELPERS ---------- */
@@ -425,17 +375,7 @@ body {
 ================================================================= */
 
 const $ = id => document.getElementById(id);
-const QS = new URLSearchParams(location.search);
-const DATA_URL = QS.get('data') || 'data/apac.json';
-
-const THEMES = ['cgiar', 'africarice', 'worldfish'];
-
-/* Brand/surface can come from the data file, or be overridden per embed:
-   map.html?data=…&theme=worldfish&area=dark  */
-function applyChrome(theme, area) {
-  if (THEMES.includes(theme)) document.documentElement.setAttribute('data-theme', theme);
-  if (area === 'dark' || area === 'light') document.body.setAttribute('data-area', area);
-}
+const DATA_URL = new URLSearchParams(location.search).get('data') || 'data/apac.json';
 
 /* Only http(s) links are honoured — blocks javascript: URLs from a data file */
 function safeUrl(u) {
@@ -467,12 +407,6 @@ function initMap(cfg) {
   const ui   = cfg.ui || {};
 
   if (!pins.length) return showError('<strong>Map could not load.</strong><br>The data file contains no <code>pins</code>.');
-
-  /* Brand theme + light/dark surface — the design system's two switches.
-     Data file sets the default; a URL parameter wins, so one dataset can be
-     embedded with different branding on different Center sites. */
-  applyChrome(cfg.theme, cfg.area);
-  applyChrome(QS.get('theme'), QS.get('area'));
 
   /* Header (optional) */
   if (hdr.title || hdr.eyebrow || hdr.subtitle) {

@@ -55,9 +55,6 @@ Only `pins` is required. Everything else has a sensible default.
 
 ```jsonc
 {
-  "theme": "cgiar",                  // cgiar | africarice | worldfish  (brand ramp + radii)
-  "area":  "light",                  // light | dark  (surface mapping)
-
   "header": {                        // optional — omit the whole block to hide the title area
     "eyebrow":  "CGIAR · Africa",    // small uppercase line above the title
     "title":    "CGIAR in Africa",   // also becomes the browser tab title
@@ -135,17 +132,13 @@ Two substitutions to be aware of:
 
 ### Theme and surface
 
-The system's two switches are both driven from the JSON — or overridden per embed via
-the URL, so one dataset can carry different branding on different Center sites:
+This map targets **CGIAR on a light surface only** — `data-theme="cgiar"` on `<html>`
+and `data-area="light"` on `<body>`. The other Center brands and the dark surface are
+deliberately not included, to keep the file small.
 
-```
-map.html?data=data/apac.json&theme=worldfish&area=dark
-```
-
-| Switch | Values | Effect |
-|---|---|---|
-| `theme` | `cgiar`, `africarice`, `worldfish` | brand ramp, radii, focus colour. Africa Rice is square-cornered. |
-| `area` | `light`, `dark` | re-points every semantic token. The accent inverts: deep on light, bright on dark. |
+Those two attributes are kept in the markup on purpose: if the map is later moved onto
+the production stylesheets, or another Center needs it, the brand and surface come from
+the props files without touching this code.
 
 ---
 
@@ -155,8 +148,6 @@ map.html?data=data/apac.json&theme=worldfish&area=dark
 |---|---|
 | APAC | `map.html?data=data/apac.json` |
 | Africa (demo) | `map.html?data=data/example-africa.json` |
-| Dark surface | `map.html?data=data/apac.json&area=dark` |
-| Africa Rice brand | `map.html?data=data/example-africa.json&theme=africarice` |
 
 ---
 
