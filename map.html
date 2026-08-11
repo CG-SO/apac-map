@@ -487,6 +487,10 @@ function initMap(cfg) {
     pins.forEach((_, i) => { renderPanel(i); max = Math.max(max, panel.scrollHeight); });
     renderPanel(keep);
     panel.style.minHeight = (max + 2) + 'px';   // +2 for the hairline border
+    /* Growing the panel grows the grid row, and therefore the map container.
+       Leaflet caches its render bounds, so without this the newly exposed strip
+       of map stays blank (land clipped off at a hard horizontal line). */
+    map.invalidateSize({ animate: false });
   }
 
   function setActive(i) {
