@@ -55,6 +55,9 @@ Only `pins` is required. Everything else has a sensible default.
 
 ```jsonc
 {
+  "theme": "cgiar",                  // cgiar | africarice | worldfish  (brand ramp + radii)
+  "area":  "light",                  // light | dark  (surface mapping)
+
   "header": {                        // optional — omit the whole block to hide the title area
     "eyebrow":  "CGIAR · Africa",    // small uppercase line above the title
     "title":    "CGIAR in Africa",   // also becomes the browser tab title
@@ -72,14 +75,6 @@ Only `pins` is required. Everything else has a sensible default.
     "hint": "Hover or click a pin…", // small grey line under the buttons
     "defaultPinStyle": "numbers",    // or "logos" to start with badges showing
     "showPinStyleToggle": true       // false hides the 123 / Logos switch
-  },
-
-  "theme": {                         // optional colour overrides
-    "brand":    "#0a6b3b",           // pins, chips, secondary button
-    "cta-bg":   "#123528",           // primary button background
-    "cta-text": "#6ee7b7",           // primary button text
-    "ocean":    "#a8d3dd",
-    "land":     "#f2efe6"
   },
 
   "pins": [                          // REQUIRED — 3–5 works best
@@ -112,12 +107,56 @@ Only `pins` is required. Everything else has a sensible default.
 
 ---
 
+## Design system
+
+The map is built on the **CGIAR design system**: it uses the system's token names
+(`--color-foreground-solid-accent-default`, `--s5`, `--dimension-border-radius-card`),
+its typography helpers (`h-typo-headline-l`, `h-typo-copy-m`, `h-typo-tag`) and its
+component classes (`a-button--primary`, `a-tag`, `a-icon`). Root font size is `62.5%`,
+so `1rem = 10px` as the system expects. No drop shadows; hierarchy is colour and
+hairline rules.
+
+Because an iframe does not inherit the parent page's CSS, `map.html` carries its own
+copy of the token layer. **When embedding inside the real site**, delete the CSS block
+down to the `COMPONENTS` comment and link the production stylesheets instead — the class
+and token names already match:
+
+```html
+<link rel="stylesheet" href="assets/css/ui.min.css">
+<link rel="stylesheet" href="assets/css/props-cgiar.css">
+```
+
+Two substitutions to be aware of:
+
+- **Icons** are inlined SVG with `class="a-icon"`. On the real site, swap them for the
+  sprite: `<svg class="a-icon"><use href="assets/icons.svg#arrow-long-right"></use></svg>`.
+- **Fonts** load Noto Sans / Noto Serif from Google Fonts. Point them at the site's own
+  font files if it self-hosts them.
+
+### Theme and surface
+
+The system's two switches are both driven from the JSON — or overridden per embed via
+the URL, so one dataset can carry different branding on different Center sites:
+
+```
+map.html?data=data/apac.json&theme=worldfish&area=dark
+```
+
+| Switch | Values | Effect |
+|---|---|---|
+| `theme` | `cgiar`, `africarice`, `worldfish` | brand ramp, radii, focus colour. Africa Rice is square-cornered. |
+| `area` | `light`, `dark` | re-points every semantic token. The accent inverts: deep on light, bright on dark. |
+
+---
+
 ## Examples
 
 | Map | URL |
 |---|---|
 | APAC | `map.html?data=data/apac.json` |
 | Africa (demo) | `map.html?data=data/example-africa.json` |
+| Dark surface | `map.html?data=data/apac.json&area=dark` |
+| Africa Rice brand | `map.html?data=data/example-africa.json&theme=africarice` |
 
 ---
 

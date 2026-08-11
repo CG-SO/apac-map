@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="cgiar">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Interactive Map</title>
+
+<!-- Noto Sans / Noto Serif — the two families the design system specifies -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&family=Noto+Serif:wght@300;400&display=swap" rel="stylesheet">
 
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -12,163 +17,437 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <style>
-  :root {
-    --brand:        #0a6b3b;
-    --brand-dark:   #084c2b;
-    --brand-tint:   #e7f2ec;
-    --accent:       #1f8fd6;
-    --cta-bg:       #123528;
-    --cta-text:     #6ee7b7;
-    --ink:          #1c2b25;
-    --muted:        #5f6f68;
-    --line:         #d9e2dd;
-    --panel-bg:     #ffffff;
-    --ocean:        #a8d3dd;
-    --land:         #f2efe6;
-    --radius:       .8rem;
-    font-synthesis: none;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--ink); background: #ffffff; line-height: 1.5;
-  }
-  .wrap { max-width: 100%; margin: 0 auto; padding: 28px 20px 40px; }
+/* =================================================================
+   CGIAR DESIGN SYSTEM — local token layer
+   Transcribed from the design system reference. When this map is
+   embedded inside the real site you can delete everything down to
+   "COMPONENTS" and link ui.min.css + props-cgiar.css instead; the
+   class names and token names below match theirs.
+================================================================= */
 
-  header.top { margin-bottom: 18px; }
-  header.top[hidden] { display: none; }
-  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--brand); font-weight: 700; margin: 0 0 6px; }
-  h1.title { font-size: clamp(22px, 3vw, 30px); margin: 0 0 4px; font-weight: 800; letter-spacing: -.01em; }
-  .sub { color: var(--muted); margin: 0; font-size: 15px; }
+/* Root font size 62.5% → 1rem = 10px */
+html { font-size: 62.5%; }
 
-  .layout { display: grid; grid-template-columns: 1fr 360px; gap: 22px; align-items: stretch; }
-  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+/* ---------- 1. PRIMITIVES ---------- */
 
-  .map-card, .side { background: var(--panel-bg); border: 1px solid var(--line); border-radius: var(--radius); }
-  .map-card { position: relative; overflow: hidden; min-height: 480px; }
+/* Neutral ramp (shared across themes) */
+:root {
+  --color-solid-grey-0:  #fff;    --color-solid-grey-10: #fafafa;
+  --color-solid-grey-20: #f5f5f5; --color-solid-grey-30: #ececec;
+  --color-solid-grey-40: #d9d9d9; --color-solid-grey-50: #cdcdcd;
+  --color-solid-grey-60: #a8a8a8; --color-solid-grey-70: #747474;
+  --color-solid-grey-80: #393939; --color-solid-grey-90: #1e1d1d;
+  --color-solid-grey-99: #080808; --color-solid-grey-100:#000;
 
-  #map { position: absolute; inset: 0; border-radius: var(--radius); background: var(--ocean); z-index: 1; }
-  .leaflet-container { font: inherit; background: var(--ocean); }
+  --color-non-brand-placeholder: #e2eef1;
+  --color-opacity-disabled: .6;
 
-  .map-toolbar { position: absolute; top: 14px; left: 14px; right: 14px; z-index: 500; display: flex; justify-content: space-between; align-items: center; gap: 10px; pointer-events: none; }
-  .region-tag { pointer-events: auto; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--brand-dark); padding: 6px 14px; letter-spacing: .03em; }
-  .region-tag:empty { display: none; }
-  .pin-style-toggle { pointer-events: auto; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
-  .pin-style-toggle[hidden] { display: none; }
-  .pin-style-toggle button { appearance: none; border: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--muted); padding: 5px 11px; border-radius: 999px; background: transparent; }
-  .pin-style-toggle button[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-dark); }
+  --typography-font-families-font-1: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --typography-font-families-font-2: "Noto Serif", Georgia, "Times New Roman", serif;
 
-  /* ---------- Pins ---------- */
-  .pin-marker {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: var(--brand); border: 3px solid #fff;
-    display: grid; place-items: center; color: #fff;
-    font-weight: 800; font-size: 14px; cursor: pointer;
-    transition: transform .16s, background .16s; position: relative;
-  }
-  .pin-marker:hover, .pin-marker.active { background: var(--brand-dark); transform: scale(1.14); }
-  .pin-marker.active::after {
-    content: ""; position: absolute; inset: -8px; border-radius: 50%;
-    border: 2px solid var(--brand); animation: pulse 1.7s ease-out infinite;
-  }
-  @keyframes pulse { 0% { transform: scale(.7); opacity: .7 } 100% { transform: scale(1.9); opacity: 0 } }
-  .pin-marker .pin-badge { display: none; font-size: 9px; letter-spacing: .02em; text-align: center; line-height: 1; }
-  .pin-marker .pin-badge img { width: 22px; height: 22px; object-fit: contain; display: block; border-radius: 50%; }
-  .map-card.show-badges .pin-marker .pin-num { display: none; }
-  .map-card.show-badges .pin-marker .pin-badge { display: block; }
+  /* Spacing — 0.4rem base, fluid at 768 / 1024 */
+  --s1: .4rem; --s2: .8rem; --s3: 1.2rem; --s4: 1.6rem; --s5: 2rem;
+  --s6: 2.4rem; --s7: 3.2rem; --s8: 4.8rem; --s9: 6.4rem; --s10: 9.6rem;
 
-  /* ---------- Side panel ---------- */
-  .side { padding: 24px; display: flex; flex-direction: column; }
-  .side .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 10px; }
-  .side .kicker:empty { display: none; }
-  .side h2 { font-size: 22px; margin: 0 0 12px; line-height: 1.25; letter-spacing: -.01em; min-height: 30px; }
-  .side .desc { color: var(--muted); font-size: 15px; margin: 0 0 8px; }
-  .side .meta { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; margin: 6px 0 18px; }
-  .side .chip { background: var(--brand-tint); color: var(--brand-dark); font-weight: 700; padding: 3px 10px; border-radius: 999px; font-size: 12px; }
-  .side .chip:empty { display: none; }
+  --border-width-thin: .1rem; --border-width-medium: .2rem; --border-width-thick: .4rem;
+}
+@media (min-width: 768px) {
+  :root { --s7: 4rem; --s8: 5.6rem; --s9: 7.2rem; --s10: 11.2rem; }
+}
+@media (min-width: 1024px) {
+  :root { --s5: 2.4rem; --s6: 3.2rem; --s7: 4.8rem; --s8: 6.4rem; --s9: 9.6rem; --s10: 12.8rem; }
+}
 
-  .cta-row { margin-top: auto; display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
-  .cta { display: inline-flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: var(--radius); transition: .18s; }
-  .cta[hidden] { display: none; }
-  .cta-primary { background: var(--cta-bg); color: var(--cta-text); border: 1.5px solid var(--cta-bg); }
-  .cta-primary:hover { filter: brightness(1.25); transform: translateY(-1px); }
-  .cta-secondary { background: transparent; color: var(--brand); border: 1.5px solid var(--brand); }
-  .cta-secondary:hover { background: var(--brand-tint); transform: translateY(-1px); }
-  .cta svg { width: 16px; height: 16px; flex: none; }
-  .side .hint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; opacity: .85; }
-  .side .hint:empty { display: none; }
+/* Brand ramps + theme-dependent radii and focus */
+[data-theme="cgiar"] {
+  --color-brand-5:#e6fff9; --color-brand-10:#9dffe8; --color-brand-20:#58fbd4;
+  --color-brand-30:#18f2be; --color-brand-40:#08d9a8; --color-brand-50:#00b389;
+  --color-brand-60:#008c6b; --color-brand-70:#06604b; --color-brand-80:#033529;
+  --color-brand-90:#02221a; --color-brand-99:#010d0a;
+  --color-dim-base: 8, 217, 168;                  /* #08d9a8 */
+  --color-focus: #3c00ff;
+  --dimension-border-radius-button: .8rem;
+  --dimension-border-radius-button-s: .6rem;
+  --dimension-border-radius-card: .8rem;
+  --dimension-border-radius-component: .8rem;
+  --dimension-border-radius-image: 0;
+  --dimension-border-radius-module: 0;
+}
+[data-theme="africarice"] {
+  --color-brand-5:#f8fff5; --color-brand-10:#ffee8d; --color-brand-20:#ffee8d;
+  --color-brand-30:#ffee8d; --color-brand-40:#95dd7d; --color-brand-50:#77bb60;
+  --color-brand-60:#5b9946; --color-brand-70:#427730; --color-brand-80:#0b5823;
+  --color-brand-90:#08481c; --color-brand-99:#001900;
+  --color-dim-base: 0, 246, 0;                    /* #00f600 */
+  --color-focus: #db1616;
+  --dimension-border-radius-button: 0;            /* Africa Rice is fully square */
+  --dimension-border-radius-button-s: 0;
+  --dimension-border-radius-card: 0;
+  --dimension-border-radius-component: .8rem;
+  --dimension-border-radius-image: 0;
+  --dimension-border-radius-module: 0;
+}
+[data-theme="worldfish"] {
+  --color-brand-5:#eef2ff; --color-brand-10:#d6e1ff; --color-brand-20:#adc3ff;
+  --color-brand-30:#85a6ff; --color-brand-40:#5c89ff; --color-brand-50:#336cff;
+  --color-brand-60:#1a4dcc; --color-brand-70:#153999; --color-brand-80:#0b2566;
+  --color-brand-90:#040f33; --color-brand-99:#020716;
+  --color-dim-base: 51, 108, 255;                 /* #336cff */
+  --color-focus: #db1616;
+  --dimension-border-radius-button: .8rem;
+  --dimension-border-radius-button-s: .6rem;
+  --dimension-border-radius-card: .8rem;
+  --dimension-border-radius-component: .8rem;
+  --dimension-border-radius-image: 0;
+  --dimension-border-radius-module: 0;
+}
 
-  .error { padding: 24px; color: #9b1c1c; background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); font-size: 14px; }
-  .error code { background: #fff; padding: 1px 5px; border-radius: 4px; }
+/* ---------- 2. SEMANTIC TOKENS (remap per data-area) ---------- */
+
+[data-area="light"] {
+  --color-background-solid-neutral-strong:  var(--color-solid-grey-0);
+  --color-background-solid-neutral-default: var(--color-solid-grey-10);
+  --color-background-solid-neutral-subtle:  var(--color-solid-grey-20);
+  --color-background-solid-neutral-hover:   var(--color-solid-grey-30);
+  --color-background-solid-invert-default:  var(--color-brand-80);
+  --color-background-solid-invert-strong:   var(--color-brand-90);
+  --color-background-dim-neutral-default:   rgba(0,0,0,.10);
+  --color-background-dim-neutral-hover:     rgba(0,0,0,.15);
+  --color-foreground-emphasis:              var(--color-solid-grey-99);
+  --color-foreground-default:               var(--color-solid-grey-80);
+  --color-foreground-subtle:                var(--color-solid-grey-70);
+  --color-foreground-solid-accent-default:  var(--color-brand-60);
+  --color-foreground-solid-accent-strong:   var(--color-brand-70);
+  --color-foreground-solid-accent-subtle:   var(--color-brand-40);
+  --color-foreground-invert:                var(--color-solid-grey-0);
+  --color-border-default:                   rgba(0,0,0,.10);
+  /* map surfaces */
+  --color-map-water: var(--color-non-brand-placeholder);
+  --color-map-land:  var(--color-solid-grey-0);
+  --color-map-coast: var(--color-solid-grey-40);
+  /* primary button: dark surface + bright accent text */
+  --color-button-primary-fg: var(--color-brand-20);
+}
+
+[data-area="dark"] {
+  --color-background-solid-neutral-strong:  var(--color-brand-90);
+  --color-background-solid-neutral-default: var(--color-brand-80);
+  --color-background-solid-neutral-subtle:  var(--color-brand-70);
+  --color-background-solid-neutral-hover:   var(--color-brand-60);
+  --color-background-solid-invert-default:  var(--color-solid-grey-10);
+  --color-background-solid-invert-strong:   var(--color-solid-grey-0);
+  --color-background-dim-neutral-default:   rgba(255,255,255,.15);
+  --color-background-dim-neutral-hover:     rgba(255,255,255,.20);
+  --color-foreground-emphasis:              var(--color-solid-grey-0);
+  --color-foreground-default:               var(--color-solid-grey-10);
+  --color-foreground-subtle:                var(--color-solid-grey-30);
+  --color-foreground-solid-accent-default:  var(--color-brand-20);
+  --color-foreground-solid-accent-strong:   var(--color-brand-10);
+  --color-foreground-solid-accent-subtle:   var(--color-brand-40);
+  --color-foreground-invert:                var(--color-brand-90);
+  --color-border-default:                   rgba(255,255,255,.15);
+  --color-map-water: var(--color-brand-90);
+  --color-map-land:  var(--color-brand-80);
+  --color-map-coast: var(--color-brand-70);
+  /* invert-default is a LIGHT surface here, so the label must go dark */
+  --color-button-primary-fg: var(--color-brand-80);
+}
+
+/* ---------- 3. TYPOGRAPHY HELPERS ---------- */
+
+.h-typo-headline-l  { font-family: var(--typography-font-families-font-1); font-weight: 300; font-size: 3.2rem; line-height: 1.3; }
+.h-typo-headline-m  { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 2.4rem; line-height: 1.3; }
+.h-typo-headline-s  { font-family: var(--typography-font-families-font-1); font-weight: 700; font-size: 2rem;   line-height: 1.3; }
+.h-typo-headline-xs { font-family: var(--typography-font-families-font-2); font-weight: 400; font-size: 1.8rem; line-height: 1.3; }
+.h-typo-copy-l      { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1.6rem; line-height: 1.5; }
+.h-typo-copy-m      { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1.4rem; line-height: 1.5; }
+.h-typo-copy-s      { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1.2rem; line-height: 1.3; }
+.h-typo-copy-s-2    { font-family: var(--typography-font-families-font-1); font-weight: 700; font-size: 1.2rem; line-height: 1.3; }
+.h-typo-caption     { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1rem;   line-height: 1.2; }
+.h-typo-link        { font-family: var(--typography-font-families-font-1); font-weight: 600; font-size: 1.6rem; line-height: 1.2; }
+.h-typo-link-s      { font-family: var(--typography-font-families-font-1); font-weight: 600; font-size: 1.4rem; line-height: 1;   letter-spacing: -.1rem; }
+.h-typo-tag         { font-family: var(--typography-font-families-font-1); font-weight: 600; font-size: 1.2rem; line-height: 1.3; letter-spacing: .1rem; }
+
+@media (min-width: 768px) {
+  .h-typo-headline-l { font-size: 3.6rem; } .h-typo-headline-m { font-size: 2.8rem; }
+  .h-typo-headline-s { font-size: 2.4rem; } .h-typo-headline-xs{ font-size: 2rem; }
+  .h-typo-copy-l { font-size: 1.8rem; } .h-typo-copy-m { font-size: 1.6rem; }
+  .h-typo-copy-s { font-size: 1.4rem; } .h-typo-copy-s-2 { font-size: 1.4rem; }
+  .h-typo-caption { font-size: 1.2rem; }
+}
+@media (min-width: 1024px) {
+  .h-typo-headline-l { font-size: 4rem; } .h-typo-headline-m { font-size: 3.2rem; }
+  .h-typo-headline-s { font-size: 2.8rem; } .h-typo-headline-xs{ font-size: 2.2rem; }
+  .h-typo-copy-l { font-size: 2rem; } .h-typo-copy-m { font-size: 1.8rem; }
+  .h-typo-copy-s { font-size: 1.6rem; } .h-typo-copy-s-2 { font-size: 1.6rem; }
+}
+
+/* Spacer helpers */
+.h-s2 { height: var(--s2); } .h-s3 { height: var(--s3); } .h-s4 { height: var(--s4); }
+.h-s5 { height: var(--s5); } .h-s6 { height: var(--s6); } .h-s7 { height: var(--s7); }
+
+/* =================================================================
+   COMPONENTS
+================================================================= */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  /* CGIAR body background is neutral-strong */
+  background: var(--color-background-solid-neutral-strong);
+  color: var(--color-foreground-default);
+  font-family: var(--typography-font-families-font-1);
+}
+
+:focus-visible { outline: var(--border-width-medium) solid var(--color-focus); outline-offset: .2rem; }
+
+.container { padding-inline: var(--s5); max-width: 100%; margin-inline: auto; }
+
+/* ---- a-icon ---- */
+.a-icon { width: 1em; height: 1em; display: block; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
+
+/* ---- a-button ---- */
+.a-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  border: var(--border-width-thin) solid transparent;
+  border-radius: var(--dimension-border-radius-button);
+  padding: var(--s3) var(--s5);
+  cursor: pointer; text-decoration: none; transition: background-color .18s, color .18s, border-color .18s;
+}
+.a-button--size-big   { padding: var(--s3) var(--s5); }
+.a-button--size-small { padding: var(--s2) var(--s4); border-radius: var(--dimension-border-radius-button-s); }
+.a-button__icon { display: flex; }
+
+/* primary = invert surface + accent-on-dark foreground */
+.a-button--primary {
+  background: var(--color-background-solid-invert-default);
+  border-color: var(--color-background-solid-invert-default);
+  color: var(--color-button-primary-fg);
+}
+.a-button--primary:hover { background: var(--color-background-solid-invert-strong); border-color: var(--color-background-solid-invert-strong); }
+
+/* secondary = outlined accent */
+.a-button--secondary {
+  background: transparent;
+  border-color: var(--color-foreground-solid-accent-default);
+  color: var(--color-foreground-solid-accent-default);
+}
+.a-button--secondary:hover { background: var(--color-background-dim-neutral-default); }
+
+/* tertiary = quiet */
+.a-button--tertiary { background: var(--color-background-solid-neutral-subtle); color: var(--color-foreground-emphasis); }
+
+.state-a-button--disabled, .a-button[disabled] { opacity: var(--color-opacity-disabled); pointer-events: none; }
+
+/* ---- a-tag ---- */
+.a-tag {
+  display: inline-block; text-transform: uppercase;
+  color: var(--color-foreground-solid-accent-strong);
+  background: var(--color-background-dim-neutral-default);
+  border-radius: var(--dimension-border-radius-button-s);
+  padding: var(--s1) var(--s3);
+}
+.a-tag:empty { display: none; }
+
+/* ---- eyebrow / category label ---- */
+.m-eyebrow { text-transform: uppercase; color: var(--color-foreground-solid-accent-default); margin: 0; }
+.m-eyebrow:empty { display: none; }
+
+/* =================================================================
+   cms-map — the map module
+================================================================= */
+
+.cms-map { padding-block: var(--s6) var(--s7); }
+
+.cms-map__header { margin-bottom: var(--s5); }
+.cms-map__header[hidden] { display: none; }
+.cms-map__title { margin: var(--s2) 0 var(--s2); color: var(--color-foreground-emphasis); }
+.cms-map__lead  { margin: 0; color: var(--color-foreground-subtle); }
+
+.cms-map__layout { display: grid; grid-template-columns: 1fr 36rem; gap: var(--s5); align-items: stretch; }
+@media (max-width: 860px) { .cms-map__layout { grid-template-columns: 1fr; } }
+
+/* Map viewport — imagery, so square-cornered per the radius tokens */
+.cms-map__canvas {
+  position: relative; overflow: hidden; min-height: 48rem;
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-card);
+  background: var(--color-map-water);
+}
+#map { position: absolute; inset: 0; z-index: 1; background: var(--color-map-water); }
+.leaflet-container { font-family: var(--typography-font-families-font-1); background: var(--color-map-water); }
+.leaflet-control-attribution { font-size: 1rem; }
+
+/* toolbar */
+.cms-map__toolbar {
+  position: absolute; top: var(--s4); left: var(--s4); right: var(--s4); z-index: 500;
+  display: flex; justify-content: space-between; align-items: center; gap: var(--s3);
+  pointer-events: none;
+}
+.cms-map__region {
+  pointer-events: auto; background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-button-s);
+  color: var(--color-foreground-emphasis); padding: var(--s2) var(--s3);
+  text-transform: uppercase;
+}
+.cms-map__region:empty { display: none; }
+
+.m-toggle {
+  pointer-events: auto; display: flex; gap: var(--s1);
+  background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-button-s); padding: var(--s1);
+}
+.m-toggle[hidden] { display: none; }
+.m-toggle__btn {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  color: var(--color-foreground-subtle); padding: var(--s1) var(--s3);
+  border-radius: var(--dimension-border-radius-button-s);
+  font-family: inherit;
+}
+.m-toggle__btn[aria-pressed="true"] {
+  background: var(--color-background-dim-neutral-default);
+  color: var(--color-foreground-solid-accent-strong);
+}
+
+/* ---- pins ---- */
+.m-pin {
+  width: 3.4rem; height: 3.4rem; border-radius: 50%;
+  background: var(--color-foreground-solid-accent-default);
+  border: .3rem solid var(--color-background-solid-neutral-strong);
+  display: grid; place-items: center;
+  color: var(--color-solid-grey-0);
+  font-family: var(--typography-font-families-font-1); font-weight: 700; font-size: 1.4rem;
+  cursor: pointer; position: relative; transition: transform .16s, background-color .16s;
+}
+.m-pin:hover, .state-m-pin--active { background: var(--color-foreground-solid-accent-strong); transform: scale(1.14); }
+.state-m-pin--active::after {
+  content: ""; position: absolute; inset: -.8rem; border-radius: 50%;
+  border: var(--border-width-medium) solid var(--color-foreground-solid-accent-default);
+  animation: pin-pulse 1.7s ease-out infinite;
+}
+@keyframes pin-pulse { 0% { transform: scale(.7); opacity: .7 } 100% { transform: scale(1.9); opacity: 0 } }
+.m-pin__badge { display: none; font-size: .9rem; letter-spacing: .02rem; text-align: center; line-height: 1; }
+.m-pin__badge img { width: 2.2rem; height: 2.2rem; object-fit: contain; display: block; }
+.state-cms-map--badges .m-pin__num { display: none; }
+.state-cms-map--badges .m-pin__badge { display: block; }
+
+/* ---- side panel ---- */
+.cms-map__panel {
+  display: flex; flex-direction: column; padding: var(--s6);
+  background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-card);
+}
+.cms-map__panel-title { margin: 0; color: var(--color-foreground-emphasis); }
+.cms-map__panel-text  { margin: 0; color: var(--color-foreground-subtle); }
+.cms-map__panel-meta  { display: flex; align-items: center; gap: var(--s3); color: var(--color-foreground-subtle); }
+.cms-map__actions { margin-top: auto; display: flex; flex-direction: column; gap: var(--s3); align-items: stretch; }
+.cms-map__actions .a-button[hidden] { display: none; }
+.cms-map__hint { margin: var(--s4) 0 0; color: var(--color-foreground-subtle); }
+.cms-map__hint:empty { display: none; }
+
+.cms-map__error {
+  padding: var(--s6); border-radius: var(--dimension-border-radius-card);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  color: var(--color-foreground-emphasis); background: var(--color-background-solid-neutral-subtle);
+}
+.cms-map__error code {
+  background: var(--color-background-dim-neutral-default);
+  padding: 0 var(--s1); border-radius: var(--dimension-border-radius-button-s);
+}
 </style>
 </head>
-<body>
-<div class="wrap">
 
-  <header class="top" id="pageHeader" hidden>
-    <p class="eyebrow" id="hdrEyebrow"></p>
-    <h1 class="title" id="hdrTitle"></h1>
-    <p class="sub" id="hdrSub"></p>
+<body data-area="light">
+<div class="cms-map container">
+
+  <header class="cms-map__header" id="pageHeader" hidden>
+    <p class="m-eyebrow h-typo-tag" id="hdrEyebrow"></p>
+    <h1 class="cms-map__title h-typo-headline-l" id="hdrTitle"></h1>
+    <p class="cms-map__lead h-typo-copy-l" id="hdrSub"></p>
   </header>
 
-  <div class="layout" id="layout">
-    <div class="map-card" id="mapCard">
-      <div class="map-toolbar">
-        <span class="region-tag" id="regionTag"></span>
-        <div class="pin-style-toggle" id="pinToggle" hidden>
-          <button id="pin-numbers" aria-pressed="true">123</button>
-          <button id="pin-badges" aria-pressed="false">Logos</button>
+  <div class="cms-map__layout" id="layout">
+
+    <div class="cms-map__canvas" id="mapCanvas">
+      <div class="cms-map__toolbar">
+        <span class="cms-map__region h-typo-tag" id="regionTag"></span>
+        <div class="m-toggle" id="pinToggle" hidden>
+          <button class="m-toggle__btn h-typo-link-s" id="pin-numbers" aria-pressed="true">123</button>
+          <button class="m-toggle__btn h-typo-link-s" id="pin-badges"  aria-pressed="false">Logos</button>
         </div>
       </div>
       <div id="map"></div>
     </div>
 
-    <aside class="side" id="sidePanel" aria-live="polite">
-      <p class="kicker" id="sp-kicker"></p>
-      <h2 id="sp-title"></h2>
-      <p class="desc" id="sp-desc"></p>
-      <div class="meta"><span class="chip" id="sp-chip"></span><span id="sp-loc"></span></div>
-      <div class="cta-row">
-        <a class="cta cta-primary" id="sp-cta1" href="#" target="_blank" rel="noopener">
-          <span id="sp-cta1-label"></span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    <aside class="cms-map__panel" id="sidePanel" aria-live="polite">
+      <p class="m-eyebrow h-typo-tag" id="sp-kicker"></p>
+      <div class="h-s3"></div>
+      <h2 class="cms-map__panel-title h-typo-headline-s" id="sp-title"></h2>
+      <div class="h-s3"></div>
+      <p class="cms-map__panel-text h-typo-copy-m" id="sp-desc"></p>
+      <div class="h-s4"></div>
+      <div class="cms-map__panel-meta">
+        <span class="a-tag h-typo-tag" id="sp-chip"></span>
+        <span class="h-typo-copy-s" id="sp-loc"></span>
+      </div>
+      <div class="h-s6"></div>
+
+      <div class="cms-map__actions">
+        <a class="a-button a-button--primary a-button--size-big h-typo-link" id="sp-cta1" href="#" target="_blank" rel="noopener">
+          <span class="a-button__text" id="sp-cta1-label"></span>
+          <span class="a-button__icon">
+            <svg class="a-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </span>
         </a>
-        <a class="cta cta-secondary" id="sp-cta2" href="#" target="_blank" rel="noopener">
-          <span id="sp-cta2-label"></span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <a class="a-button a-button--secondary a-button--size-big h-typo-link" id="sp-cta2" href="#" target="_blank" rel="noopener">
+          <span class="a-button__text" id="sp-cta2-label"></span>
+          <span class="a-button__icon">
+            <svg class="a-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </span>
         </a>
       </div>
-      <p class="hint" id="sp-hint"></p>
-    </aside>
-  </div>
 
+      <p class="cms-map__hint h-typo-caption" id="sp-hint"></p>
+    </aside>
+
+  </div>
 </div>
 
 <script>
 /* =================================================================
-   GENERIC MAP ENGINE — no data lives in this file.
+   GENERIC MAP ENGINE — no content lives in this file.
    Point it at a JSON file:  map.html?data=data/apac.json
    See README.md for the JSON format.
 ================================================================= */
 
 const $ = id => document.getElementById(id);
+const QS = new URLSearchParams(location.search);
+const DATA_URL = QS.get('data') || 'data/apac.json';
 
-/* Which dataset? ?data=<path>. Defaults to data/apac.json */
-const DATA_URL = new URLSearchParams(location.search).get('data') || 'data/apac.json';
+const THEMES = ['cgiar', 'africarice', 'worldfish'];
 
-/* Only allow http(s)/relative links — blocks javascript: URLs from a data file */
+/* Brand/surface can come from the data file, or be overridden per embed:
+   map.html?data=…&theme=worldfish&area=dark  */
+function applyChrome(theme, area) {
+  if (THEMES.includes(theme)) document.documentElement.setAttribute('data-theme', theme);
+  if (area === 'dark' || area === 'light') document.body.setAttribute('data-area', area);
+}
+
+/* Only http(s) links are honoured — blocks javascript: URLs from a data file */
 function safeUrl(u) {
   if (!u) return '';
   try {
-    const parsed = new URL(u, location.href);
-    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') ? parsed.href : '';
+    const p = new URL(u, location.href);
+    return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : '';
   } catch { return ''; }
 }
 
 function showError(msg) {
-  $('layout').innerHTML =
-    '<div class="error"><strong>Map could not load.</strong><br>' + msg + '</div>';
+  $('layout').innerHTML = '<div class="cms-map__error h-typo-copy-m">' + msg + '</div>';
   postHeight();
 }
 
@@ -176,31 +455,33 @@ fetch(DATA_URL)
   .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(initMap)
   .catch(err => showError(
-    'Could not read <code>' + DATA_URL.replace(/</g, '&lt;') + '</code> (' + err.message + ').<br>' +
+    '<strong>Map could not load.</strong><br>Could not read <code>' +
+    DATA_URL.replace(/</g, '&lt;') + '</code> (' + err.message + ').<br>' +
     'Check the <code>?data=</code> path and that the JSON is valid.'
   ));
 
 function initMap(cfg) {
-  const pins  = Array.isArray(cfg.pins) ? cfg.pins : [];
-  const hdr   = cfg.header || {};
-  const mcfg  = cfg.map || {};
-  const ui    = cfg.ui || {};
+  const pins = Array.isArray(cfg.pins) ? cfg.pins : [];
+  const hdr  = cfg.header || {};
+  const mcfg = cfg.map || {};
+  const ui   = cfg.ui || {};
 
-  if (!pins.length) return showError('The data file contains no <code>pins</code>.');
+  if (!pins.length) return showError('<strong>Map could not load.</strong><br>The data file contains no <code>pins</code>.');
 
-  /* ---- Header (optional — omit "header" in JSON to hide it entirely) ---- */
+  /* Brand theme + light/dark surface — the design system's two switches.
+     Data file sets the default; a URL parameter wins, so one dataset can be
+     embedded with different branding on different Center sites. */
+  applyChrome(cfg.theme, cfg.area);
+  applyChrome(QS.get('theme'), QS.get('area'));
+
+  /* Header (optional) */
   if (hdr.title || hdr.eyebrow || hdr.subtitle) {
-    $('hdrEyebrow').textContent = hdr.eyebrow || '';
-    $('hdrTitle').textContent   = hdr.title   || '';
-    $('hdrSub').textContent     = hdr.subtitle|| '';
+    $('hdrEyebrow').textContent = hdr.eyebrow  || '';
+    $('hdrTitle').textContent   = hdr.title    || '';
+    $('hdrSub').textContent     = hdr.subtitle || '';
     $('pageHeader').hidden = false;
   }
   if (hdr.title) document.title = hdr.title;
-
-  /* ---- Theme overrides (optional "theme": { "brand": "#0a6b3b", ... }) ---- */
-  Object.entries(cfg.theme || {}).forEach(([k, v]) => {
-    document.documentElement.style.setProperty('--' + k, v);
-  });
 
   $('regionTag').textContent = mcfg.regionLabel || '';
   $('sp-hint').textContent   = ui.hint || '';
@@ -219,8 +500,13 @@ function initMap(cfg) {
     .addAttribution('Boundaries: <a href="https://www.naturalearthdata.com/">Natural Earth</a>')
     .addTo(map);
 
-  const landStyle = { fillColor: getComputedStyle(document.documentElement).getPropertyValue('--land').trim() || '#f2efe6',
-                      fillOpacity: 1, color: '#ffffff', weight: 0.5, opacity: 0.6 };
+  const css = getComputedStyle(document.body);
+  const landStyle = {
+    fillColor: css.getPropertyValue('--color-map-land').trim() || '#ffffff',
+    fillOpacity: 1,
+    color: css.getPropertyValue('--color-map-coast').trim() || '#d9d9d9',
+    weight: 0.8, opacity: 1
+  };
   fetch('https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json')
     .then(r => r.json())
     .then(geo => L.geoJSON(geo, { style: landStyle, interactive: false }).addTo(map))
@@ -254,8 +540,8 @@ function initMap(cfg) {
   function setActive(i) {
     activeIdx = i;
     markers.forEach((m, idx) => {
-      const el = m.getElement() && m.getElement().querySelector('.pin-marker');
-      if (el) el.classList.toggle('active', idx === i);
+      const el = m.getElement() && m.getElement().querySelector('.m-pin');
+      if (el) el.classList.toggle('state-m-pin--active', idx === i);
     });
     renderPanel(i);
   }
@@ -264,7 +550,7 @@ function initMap(cfg) {
   let anyBadge = false;
   pins.forEach((d, i) => {
     const num = i + 1;
-    const badgeHtml = d.logo
+    const badge = d.logo
       ? '<img src="' + safeUrl(d.logo) + '" alt="">'
       : (d.badge ? String(d.badge).replace(/[<>&"]/g, '') : num);
     if (d.logo || d.badge) anyBadge = true;
@@ -272,9 +558,9 @@ function initMap(cfg) {
     const label = ((d.title || 'Location') + (d.loc ? ', ' + d.loc : '')).replace(/"/g, '');
     const icon = L.divIcon({
       className: '',
-      html: '<div class="pin-marker" role="button" tabindex="0" aria-label="' + label + '">' +
-              '<span class="pin-num">' + num + '</span>' +
-              '<span class="pin-badge">' + badgeHtml + '</span>' +
+      html: '<div class="m-pin" role="button" tabindex="0" aria-label="' + label + '">' +
+              '<span class="m-pin__num">' + num + '</span>' +
+              '<span class="m-pin__badge">' + badge + '</span>' +
             '</div>',
       iconSize: [34, 34], iconAnchor: [17, 17]
     });
@@ -286,12 +572,11 @@ function initMap(cfg) {
     markers.push(m);
   });
 
-  /* Pin style toggle only appears if the data supplies badges/logos */
   if (anyBadge && ui.showPinStyleToggle !== false) $('pinToggle').hidden = false;
 
   map.whenReady(() => {
     markers.forEach((m, i) => {
-      const el = m.getElement() && m.getElement().querySelector('.pin-marker');
+      const el = m.getElement() && m.getElement().querySelector('.m-pin');
       if (el) el.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(i); }
       });
@@ -301,18 +586,17 @@ function initMap(cfg) {
   });
 
   if (mcfg.fitToPins !== false && pins.length > 1) {
-    map.fitBounds(L.latLngBounds(pins.map(p => p.coords)).pad(0.35),
-                  { maxZoom: mcfg.fitMaxZoom || 6 });
+    map.fitBounds(L.latLngBounds(pins.map(p => p.coords)).pad(0.35), { maxZoom: mcfg.fitMaxZoom || 6 });
   }
 
-  /* ---- Numbers <-> badges toggle ---- */
-  const mapCard = $('mapCard'), bN = $('pin-numbers'), bB = $('pin-badges');
+  /* ---- Numbers <-> badges ---- */
+  const canvas = $('mapCanvas'), bN = $('pin-numbers'), bB = $('pin-badges');
   bN.addEventListener('click', () => {
-    mapCard.classList.remove('show-badges');
+    canvas.classList.remove('state-cms-map--badges');
     bN.setAttribute('aria-pressed', 'true'); bB.setAttribute('aria-pressed', 'false');
   });
   bB.addEventListener('click', () => {
-    mapCard.classList.add('show-badges');
+    canvas.classList.add('state-cms-map--badges');
     bB.setAttribute('aria-pressed', 'true'); bN.setAttribute('aria-pressed', 'false');
   });
   if (ui.defaultPinStyle === 'logos') bB.click();
