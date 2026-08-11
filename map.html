@@ -214,6 +214,8 @@ body {
 .cms-map__header[hidden] { display: none; }
 .cms-map__title { margin: var(--s2) 0 var(--s2); color: var(--color-foreground-emphasis); }
 .cms-map__lead  { margin: 0; color: var(--color-foreground-subtle); }
+/* omit any header field in the JSON and it collapses instead of leaving a gap */
+.cms-map__title:empty, .cms-map__lead:empty { display: none; }
 
 .cms-map__layout { display: grid; grid-template-columns: 1fr 36rem; gap: var(--s5); align-items: stretch; }
 @media (max-width: 860px) { .cms-map__layout { grid-template-columns: 1fr; } }
