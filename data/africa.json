@@ -1,0 +1,63 @@
+{
+  "header": {
+    "eyebrow": "CGIAR · Africa",
+    "title": "CGIAR in Africa",
+    "subtitle": "Explore flagship regional work — select a pin to see details."
+  },
+  "map": {
+    "regionLabel": "Africa",
+    "center": [2, 20],
+    "zoom": 3,
+    "fitToPins": true
+  },
+  "ui": {
+    "hint": "Hover or click a pin to update this panel. All links open existing CGIAR pages.",
+    "defaultPinStyle": "numbers"
+  },
+  "pins": [
+    {
+      "coords": [-1.29, 36.82],
+      "badge": "MAIZE",
+      "kicker": "Regional initiative",
+      "title": "Drought-tolerant maize",
+      "desc": "Climate-adapted maize varieties helping smallholders hold yields through longer, drier seasons.",
+      "chip": "Program",
+      "loc": "Kenya · East Africa",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    },
+    {
+      "coords": [7.38, 3.90],
+      "badge": "ROOTS",
+      "kicker": "Regional initiative",
+      "title": "Cassava seed systems",
+      "desc": "Clean planting material and improved varieties reaching cassava farmers faster and more reliably.",
+      "chip": "Program",
+      "loc": "Nigeria · West Africa",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    },
+    {
+      "coords": [9.03, 38.74],
+      "badge": "LIVE",
+      "kicker": "Regional initiative",
+      "title": "Livestock health & diagnostics",
+      "desc": "Vaccines and rapid diagnostics protecting herds, livelihoods and household nutrition.",
+      "chip": "Accelerator",
+      "loc": "Ethiopia · East Africa",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    },
+    {
+      "coords": [7.69, -5.03],
+      "badge": "RICE",
+      "kicker": "Regional initiative",
+      "title": "Rice systems for Africa",
+      "desc": "Higher-yielding, climate-resilient rice systems reducing import dependence across the region.",
+      "chip": "Program",
+      "loc": "Côte d'Ivoire · West Africa",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    }
+  ]
+}

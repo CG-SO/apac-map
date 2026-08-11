@@ -1,0 +1,63 @@
+{
+  "header": {
+    "eyebrow": "CGIAR · Americas",
+    "title": "CGIAR in the Americas",
+    "subtitle": "Explore flagship regional work — select a pin to see details."
+  },
+  "map": {
+    "regionLabel": "Latin America & the Caribbean",
+    "center": [-5, -70],
+    "zoom": 3,
+    "fitToPins": true
+  },
+  "ui": {
+    "hint": "Hover or click a pin to update this panel. All links open existing CGIAR pages.",
+    "defaultPinStyle": "numbers"
+  },
+  "pins": [
+    {
+      "coords": [3.44, -76.52],
+      "badge": "BEANS",
+      "kicker": "Regional initiative",
+      "title": "Beans & climate resilience",
+      "desc": "Heat- and drought-tolerant bean varieties safeguarding a staple protein source for the region.",
+      "chip": "Program",
+      "loc": "Colombia · South America",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    },
+    {
+      "coords": [19.53, -98.84],
+      "badge": "GRAIN",
+      "kicker": "Regional initiative",
+      "title": "Maize & wheat improvement",
+      "desc": "Breeding and agronomy raising yields and resilience for maize and wheat growers.",
+      "chip": "Program",
+      "loc": "Mexico · North America",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    },
+    {
+      "coords": [-12.05, -77.04],
+      "badge": "ROOTS",
+      "kicker": "Regional initiative",
+      "title": "Potato & Andean roots",
+      "desc": "Conserving and improving potato and Andean root crops for nutrition and climate adaptation.",
+      "chip": "Program",
+      "loc": "Peru · Andes",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    },
+    {
+      "coords": [14.07, -87.19],
+      "badge": "DX",
+      "kicker": "Regional initiative",
+      "title": "Dry corridor resilience",
+      "desc": "Water-smart practices and early warning helping farming families through recurring drought.",
+      "chip": "Accelerator",
+      "loc": "Honduras · Central America",
+      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" },
+      "secondary": { "label": "Explore the region",   "url": "https://www.cgiar.org/where-we-work/" }
+    }
+  ]
+}

@@ -142,12 +142,19 @@ the props files without touching this code.
 
 ---
 
-## Examples
+## The three regional maps
 
-| Map | URL |
-|---|---|
-| APAC | `map.html?data=data/apac.json` |
-| Africa (demo) | `map.html?data=data/example-africa.json` |
+One page each on CGIAR.org, one JSON file each, one shared `map.html`.
+
+| Page | `?data=` | Embed URL |
+|---|---|---|
+| APAC | `data/apac.json` | `https://cg-so.github.io/apac-map/map.html?data=data/apac.json` |
+| Americas | `data/americas.json` | `https://cg-so.github.io/apac-map/map.html?data=data/americas.json` |
+| Africa | `data/africa.json` | `https://cg-so.github.io/apac-map/map.html?data=data/africa.json` |
+
+> **Copy and links are placeholder.** Titles, descriptions and CTA URLs need replacing
+> with approved copy and the real Program / Accelerator pages before these go live.
+> Pin coordinates use CGIAR Center locations and can be moved to the actual project sites.
 
 ---
 
