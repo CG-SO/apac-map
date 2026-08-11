@@ -142,17 +142,20 @@ html { font-size: 62.5%; }
 
 * { box-sizing: border-box; }
 
+/* Transparent so the embedding CGIAR.org page's background shows through the
+   iframe. The side panel and map canvas set their own surfaces explicitly. */
+html, body { background: transparent; }
+
 body {
   margin: 0;
-  /* CGIAR body background is neutral-strong */
-  background: var(--color-background-solid-neutral-strong);
   color: var(--color-foreground-default);
   font-family: var(--typography-font-families-font-1);
 }
 
 :focus-visible { outline: var(--border-width-medium) solid var(--color-focus); outline-offset: .2rem; }
 
-.container { padding-inline: var(--s5); max-width: 100%; margin-inline: auto; }
+/* No inline padding — the embedding CGIAR.org container supplies it */
+.container { padding-inline: 0; max-width: 100%; margin-inline: auto; }
 
 /* ---- a-icon ---- */
 .a-icon { width: 1em; height: 1em; display: block; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
