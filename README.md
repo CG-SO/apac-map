@@ -85,7 +85,7 @@ Only `pins` is required. Everything else has a sensible default.
       "desc":   "Max ~150 characters keeps the panel tidy.",
       "chip":   "Program",           // small green tag
       "loc":    "Kenya · East Africa",
-      "primary":   { "label": "View related Program", "url": "https://…" },
+      "primary":   { "label": "Find out more", "url": "https://…" },
       "secondary": { "label": "Explore the region",   "url": "https://…" }  // omit to show one button
     }
   ]

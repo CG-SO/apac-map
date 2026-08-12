@@ -21,7 +21,7 @@
       "desc": "Direct-seeded, low-emission rice systems cutting water use and methane across the Eastern Gangetic Plains.",
       "chip": "Program",
       "loc": "India · South Asia",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
+      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [22.7, 90.4],
@@ -31,7 +31,7 @@
       "desc": "Resilient small-scale fisheries and aquaculture in the delta — boosting nutrition and rural incomes.",
       "chip": "Program",
       "loc": "Bangladesh delta",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
+      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [16.0, 108.2],
@@ -41,7 +41,7 @@
       "desc": "Rapid field diagnostics for pests and animal disease, protecting smallholder yields across Southeast Asia.",
       "chip": "Accelerator",
       "loc": "Vietnam · SE Asia",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
+      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
     },
     {
       "coords": [-7.8, 110.4],
@@ -51,7 +51,7 @@
       "desc": "Faster access to climate-adapted, quality seed for smallholders across Indonesia's farming islands.",
       "chip": "Program",
       "loc": "Indonesia",
-      "primary":   { "label": "View related Program", "url": "https://www.cgiar.org/research/" }
+      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
     }
   ]
 }
