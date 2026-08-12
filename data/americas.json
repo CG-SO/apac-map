@@ -4,7 +4,10 @@
   },
   "map": {
     "regionLabel": "Latin America & the Caribbean",
-    "center": [8, -80],
+    "center": [
+      8,
+      -80
+    ],
     "zoom": 4,
     "fitToPins": true
   },
@@ -14,34 +17,52 @@
   },
   "pins": [
     {
-      "coords": [14.75, -86.85],
+      "coords": [
+        14.75,
+        -86.85
+      ],
       "badge": "AGUA",
       "kicker": "Honduras",
       "title": "Digital water governance at scale",
-      "desc": "Co-developed with the Government of Honduras, Agua de Honduras provides a digital platform for water-resource management covering 44 percent of the country. The platform has supported the legalization of 110 watershed management councils, strengthening community participation in water governance.",
+      "desc": "CGIAR co-developed Agua de Honduras, a platform supporting water-resource management across 44% of the country, helping legalize 110 watershed councils and strengthen community-led water governance.",
       "chip": "Program",
       "loc": "Honduras · Central America",
-      "primary": { "label": "View related Program", "url": "https://cgspace.cgiar.org/items/cbbe559a-81fb-4e02-bf2f-6ebae08c5338" }
+      "primary": {
+        "label": "View related Program",
+        "url": "https://cgspace.cgiar.org/items/cbbe559a-81fb-4e02-bf2f-6ebae08c5338"
+      }
     },
     {
-      "coords": [15.50, -90.25],
+      "coords": [
+        15.5,
+        -90.25
+      ],
       "badge": "CLIM",
       "kicker": "Guatemala",
       "title": "Taking climate information the last mile",
-      "desc": "Working with Guatemala's Ministry of Agriculture and national meteorological services, CGIAR supported development of a National Framework for Climate Services and co-created delivery mechanisms bringing tailored climate information to farmers across five departments and 176 communities.",
+      "desc": "CGIAR helped establish Guatemala's National Framework for Climate Services, delivering tailored climate information to farmers across five departments and 176 communities.",
       "chip": "Program",
       "loc": "Guatemala · Central America",
-      "primary": { "label": "View related Program", "url": "https://www.cgiar.org/initiative-result/implementation-of-climate-services-at-national-scale-promotes-behavior-changes-in-the-public-sector-in-guatemala" }
+      "primary": {
+        "label": "View related Program",
+        "url": "https://www.cgiar.org/initiative-result/implementation-of-climate-services-at-national-scale-promotes-behavior-changes-in-the-public-sector-in-guatemala"
+      }
     },
     {
-      "coords": [4.57, -74.30],
+      "coords": [
+        4.57,
+        -74.3
+      ],
       "badge": "LIVE",
       "kicker": "Colombia",
       "title": "Lower-emissions cattle production",
-      "desc": "A CGIAR-supported cattle ranch in Colombia achieved 44 percent lower emissions through sustainable grazing practices. The approach attracted US$7.5 million in private investment to support scaling.",
+      "desc": "A CGIAR-supported ranch achieved 44% lower emissions through sustainable grazing practices, helping attract US$7.5 million in private investment for scaling.",
       "chip": "Program",
       "loc": "Colombia · South America",
-      "primary": { "label": "View related Program", "url": "https://www.cgiar.org/initiative-result/colombian-cattle-farm-hacienda-san-jose-secures-us7-5-million-investment-supported-by-cgiar-tropical-grass-and-sustainable-livestock-certification-innovations" }
+      "primary": {
+        "label": "View related Program",
+        "url": "https://www.cgiar.org/initiative-result/colombian-cattle-farm-hacienda-san-jose-secures-us7-5-million-investment-supported-by-cgiar-tropical-grass-and-sustainable-livestock-certification-innovations"
+      }
     }
   ]
 }
