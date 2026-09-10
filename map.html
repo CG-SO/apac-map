@@ -195,7 +195,7 @@ body {
 
 /* ---- a-tag ---- */
 .a-tag {
-  display: inline-block; text-transform: uppercase;
+  display: inline-block; text-transform: uppercase; white-space: nowrap;
   color: var(--color-foreground-solid-accent-strong);
   background: var(--color-background-dim-neutral-default);
   border-radius: var(--dimension-border-radius-button-s);
@@ -298,7 +298,7 @@ body {
 }
 .cms-map__panel-title { margin: 0; color: var(--color-foreground-emphasis); }
 .cms-map__panel-text  { margin: 0; color: var(--color-foreground-subtle); }
-.cms-map__panel-meta  { display: flex; align-items: center; gap: var(--s3); color: var(--color-foreground-subtle); }
+.cms-map__panel-meta  { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); color: var(--color-foreground-subtle); }
 .cms-map__actions { margin-top: auto; display: flex; flex-direction: column; gap: var(--s3); align-items: stretch; }
 .cms-map__actions .a-button[hidden] { display: none; }
 .cms-map__hint { margin: var(--s4) 0 0; color: var(--color-foreground-subtle); }

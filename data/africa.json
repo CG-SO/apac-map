@@ -14,44 +14,34 @@
   },
   "pins": [
     {
-      "coords": [-1.29, 36.82],
+      "coords": [0.02, 37.91],
       "badge": "MAIZE",
-      "kicker": "Regional initiative",
+      "kicker": "Kenya",
       "title": "Drought-tolerant maize",
-      "desc": "Climate-adapted maize varieties helping smallholders hold yields through longer, drier seasons.",
+      "desc": "Climate-resilient maize varieties helping farmers maintain yields through hotter, drier conditions.",
       "chip": "Program",
       "loc": "Kenya · East Africa",
-      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
+      "primary": { "label": "Find out more", "url": "https://www.cgiar.org/innovations/climate-smart-maize" }
     },
     {
-      "coords": [7.38, 3.90],
+      "coords": [9.08, 8.68],
       "badge": "ROOTS",
-      "kicker": "Regional initiative",
+      "kicker": "Nigeria",
       "title": "Cassava seed systems",
-      "desc": "Clean planting material and improved varieties reaching cassava farmers faster and more reliably.",
+      "desc": "High-quality planting material and improved varieties reaching cassava farmers through stronger seed systems.",
       "chip": "Program",
       "loc": "Nigeria · West Africa",
-      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
+      "primary": { "label": "Find out more", "url": "https://www.cgiar.org/news-events/news/from-seeds-to-sustainability-celebrating-the-basics-ii-legacy" }
     },
     {
-      "coords": [9.03, 38.74],
-      "badge": "LIVE",
-      "kicker": "Regional initiative",
-      "title": "Livestock health & diagnostics",
-      "desc": "Vaccines and rapid diagnostics protecting herds, livelihoods and household nutrition.",
-      "chip": "Accelerator",
-      "loc": "Ethiopia · East Africa",
-      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
-    },
-    {
-      "coords": [7.69, -5.03],
-      "badge": "RICE",
-      "kicker": "Regional initiative",
-      "title": "Rice systems for Africa",
-      "desc": "Higher-yielding, climate-resilient rice systems reducing import dependence across the region.",
-      "chip": "Program",
-      "loc": "Côte d'Ivoire · West Africa",
-      "primary":   { "label": "Find out more", "url": "https://www.cgiar.org/research/" }
+      "coords": [-1.94, 29.87],
+      "badge": "SOIL",
+      "kicker": "Rwanda",
+      "title": "Site-specific fertilizer digital advisory",
+      "desc": "Digital recommendations helping farmers apply the right fertilizer for their crop, location and conditions.",
+      "chip": "Digital Innovation",
+      "loc": "Rwanda · East Africa",
+      "primary": { "label": "Find out more", "url": "https://www.cgiar.org/news-events/news/a-smart-and-smartly-delivered-advisory-service-for-rwandas-small-scale-farmers" }
     }
   ]
 }
