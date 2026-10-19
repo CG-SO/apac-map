@@ -1,0 +1,49 @@
+{
+  "header": {
+    "eyebrow": "CGIAR · Sustainable Farming Program",
+    "title": "Where we work",
+    "subtitle": "SFP's 20 priority countries, grouped in three tiers."
+  },
+  "theme": {
+    "accent": "#2c6a4f",
+    "accentStrong": "#03352a"
+  },
+  "map": {
+    "regionLabel": "SFP priority countries",
+    "fitToTiers": true
+  },
+  "ui": {
+    "hint": "Select a tier to highlight its countries.",
+    "selectPrompt": "Select a country on the map to see its tier.",
+    "disclaimer": ""
+  },
+  "tiers": [
+    {
+      "id": "tier-1",
+      "label": "Tier 1",
+      "description": "Core priorities",
+      "color": "#03352a",
+      "countries": ["ETH", "BFA", "MWI", "BDI", "KEN", "NGA", "RWA"]
+    },
+    {
+      "id": "tier-2",
+      "label": "Tier 2",
+      "description": "Strategic priorities",
+      "color": "#2c6a4f",
+      "countries": ["TZA", "BGD", "COD", "EGY", "UGA", "IND", "ZMB", "VNM", "GHA"]
+    },
+    {
+      "id": "tier-3",
+      "label": "Tier 3",
+      "description": "Emerging priorities",
+      "color": "#8a8160",
+      "countries": ["MOZ", "MDG", "PHL", "MAR"]
+    }
+  ],
+  "countryNames": {
+    "VNM": "Viet Nam",
+    "COD": "Democratic Republic of the Congo",
+    "TZA": "Tanzania"
+  },
+  "countryInfo": {}
+}

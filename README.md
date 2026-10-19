@@ -159,11 +159,116 @@ One page each on CGIAR.org, one JSON file each, one shared `map.html`.
 
 ---
 
+## Tier map (choropleth)
+
+A second engine, `tier-map.html`, colours whole countries by tier instead of dropping pins.
+It shares the token layer, typography helpers and component classes with `map.html`, the
+same basemap and boundaries, and the same iframe height message, so the embed script is
+identical. `map.html` and the existing data files are untouched.
+
+**Live URL:** `https://cg-so.github.io/apac-map/tier-map.html?data=data/sfp.json`
+
+### Embed snippet (Drupal)
+
+```html
+<iframe id="sfpTierMap"
+        src="https://cg-so.github.io/apac-map/tier-map.html?data=data/sfp.json"
+        title="Sustainable Farming Program priority countries map" loading="lazy" scrolling="no"
+        style="width:100%; min-height:640px; border:0; border-radius:.8rem; display:block;">
+</iframe>
+<script>
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.type === 'apac-map-height' && typeof e.data.height === 'number') {
+      var f = document.getElementById('sfpTierMap');
+      if (f) f.style.height = e.data.height + 'px';
+    }
+  });
+</script>
+```
+
+Both engines post the same `apac-map-height` message, and this listener does not check
+which iframe sent it. If one page ever embeds a pin map **and** a tier map, add
+`e.source === f.contentWindow &&` to each listener's condition so each iframe only takes
+its own height.
+
+### Data file format
+
+Only `tiers` is required.
+
+```jsonc
+{
+  "header": {                          // optional, shown at the top of the right panel
+    "eyebrow":  "CGIAR · Sustainable Farming Program",
+    "title":    "Where we work",       // also becomes the browser tab title
+    "subtitle": "Short intro line."
+  },
+
+  "theme": {                           // optional, sub-brand accents (hex only)
+    "accent":       "#2c6a4f",         // → --color-foreground-solid-accent-default
+    "accentStrong": "#03352a",         // → --color-foreground-solid-accent-strong
+    "invert":       "#03352a"          // → --color-background-solid-invert-default
+  },
+
+  "map": {
+    "regionLabel": "SFP priority countries",  // white pill on the map (omit to hide)
+    "fitToTiers": true,                // auto-fit to all tier countries (default true)
+    "fitMaxZoom": 5,                   // optional cap when fitting
+    "center": [10, 40], "zoom": 3      // used only when fitToTiers is false
+  },
+
+  "ui": {
+    "hint":         "Select a tier to highlight its countries.",
+    "selectPrompt": "Select a country on the map to see its tier.",
+    "filterLabel":  "Filter by tier",  // default shown
+    "allLabel":     "All tiers",       // default shown
+    "disclaimer":   ""                 // small line under the map, e.g. boundaries note
+  },
+
+  "tiers": [                           // REQUIRED, listed strongest first
+    {
+      "id": "tier-1",
+      "label": "Tier 1",
+      "description": "Core priorities",  // optional sub-label
+      "color": "#03352a",                // hex only, anything else falls back to the accent
+      "countries": ["ETH", "KEN"]        // ISO 3166-1 alpha-3, matched to the GeoJSON "id"
+    }
+  ],
+
+  "countryNames": { "VNM": "Viet Nam" },  // overrides the GeoJSON name
+
+  "countryInfo": {                     // optional extra lines when a country is selected
+    "KEN": [
+      "Country Coordinator: Name Surname",
+      { "text": "Centre page", "url": "https://…" }   // links must be http(s)
+    ]
+  }
+}
+```
+
+### Behaviour
+
+- Click a tier to keep its countries at full colour, fade the others and zoom to that
+  tier. Click it again, or **All tiers**, to reset.
+- Hover or keyboard-focus a country for a "Country · Tier N" tooltip. Click it or press
+  Enter to show it in the panel. Escape clears the selection.
+- Tier buttons and country shapes are real buttons with `aria-pressed`. A visually hidden
+  summary lists every tier and country for screen readers.
+- On load the engine logs a console warning for any ISO3 code missing from the GeoJSON
+  and for any country listed in two tiers (the first listing wins).
+
+### Colour contrast
+
+Each tier fill needs at least 3:1 against the land (`#fff`) and the water
+(`#e2eef1`) colours (WCAG 1.4.11). Check new colours before publishing them.
+
+---
+
 ## Files
 
 | File | Purpose |
 |---|---|
 | `map.html` | The map engine. Generic — contains no content. |
+| `tier-map.html` | Choropleth tier-map engine. Generic — contains no content. |
 | `data/*.json` | One file per map. **This is what you edit.** |
 | `index.html` | Original standalone demo (map + portfolio tabs). |
 | `map-only.html` | Original single-purpose APAC map, kept for existing embeds. |

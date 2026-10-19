@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cgiar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Priority countries map</title>
+
+<!-- Noto Sans / Noto Serif — the two families the design system specifies -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&family=Noto+Serif:wght@300;400&display=swap" rel="stylesheet">
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+/* =================================================================
+   CGIAR DESIGN SYSTEM — local token layer
+   Transcribed from the design system reference. When this map is
+   embedded inside the real site you can delete everything down to
+   "COMPONENTS" and link ui.min.css + props-cgiar.css instead; the
+   class names and token names below match theirs.
+================================================================= */
+
+/* Root font size 62.5% → 1rem = 10px */
+html { font-size: 62.5%; }
+
+/* ---------- 1. PRIMITIVES ---------- */
+
+/* Neutral ramp (shared across themes) */
+:root {
+  --color-solid-grey-0:  #fff;    --color-solid-grey-10: #fafafa;
+  --color-solid-grey-20: #f5f5f5; --color-solid-grey-30: #ececec;
+  --color-solid-grey-40: #d9d9d9; --color-solid-grey-50: #cdcdcd;
+  --color-solid-grey-60: #a8a8a8; --color-solid-grey-70: #747474;
+  --color-solid-grey-80: #393939; --color-solid-grey-90: #1e1d1d;
+  --color-solid-grey-99: #080808; --color-solid-grey-100:#000;
+
+  --color-non-brand-placeholder: #e2eef1;
+  --color-opacity-disabled: .6;
+
+  --typography-font-families-font-1: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --typography-font-families-font-2: "Noto Serif", Georgia, "Times New Roman", serif;
+
+  /* Spacing — 0.4rem base, fluid at 768 / 1024 */
+  --s1: .4rem; --s2: .8rem; --s3: 1.2rem; --s4: 1.6rem; --s5: 2rem;
+  --s6: 2.4rem; --s7: 3.2rem; --s8: 4.8rem; --s9: 6.4rem; --s10: 9.6rem;
+
+  --border-width-thin: .1rem; --border-width-medium: .2rem; --border-width-thick: .4rem;
+}
+@media (min-width: 768px) {
+  :root { --s7: 4rem; --s8: 5.6rem; --s9: 7.2rem; --s10: 11.2rem; }
+}
+@media (min-width: 1024px) {
+  :root { --s5: 2.4rem; --s6: 3.2rem; --s7: 4.8rem; --s8: 6.4rem; --s9: 9.6rem; --s10: 12.8rem; }
+}
+
+/* CGIAR brand ramp + radii and focus.
+   The [data-theme]/[data-area] selectors are kept so that linking the real
+   ui.min.css + props-cgiar.css later is a drop-in replacement. */
+[data-theme="cgiar"] {
+  --color-brand-5:#e6fff9; --color-brand-10:#9dffe8; --color-brand-20:#58fbd4;
+  --color-brand-30:#18f2be; --color-brand-40:#08d9a8; --color-brand-50:#00b389;
+  --color-brand-60:#008c6b; --color-brand-70:#06604b; --color-brand-80:#033529;
+  --color-brand-90:#02221a; --color-brand-99:#010d0a;
+  --color-dim-base: 8, 217, 168;                  /* #08d9a8 */
+  --color-focus: #3c00ff;
+  --dimension-border-radius-button: .8rem;
+  --dimension-border-radius-button-s: .6rem;
+  --dimension-border-radius-card: .8rem;
+  --dimension-border-radius-component: .8rem;
+  --dimension-border-radius-image: 0;
+  --dimension-border-radius-module: 0;
+}
+
+/* ---------- 2. SEMANTIC TOKENS ---------- */
+
+[data-area="light"] {
+  --color-background-solid-neutral-strong:  var(--color-solid-grey-0);
+  --color-background-solid-neutral-default: var(--color-solid-grey-10);
+  --color-background-solid-neutral-subtle:  var(--color-solid-grey-20);
+  --color-background-solid-neutral-hover:   var(--color-solid-grey-30);
+  --color-background-solid-invert-default:  var(--color-brand-80);
+  --color-background-solid-invert-strong:   var(--color-brand-90);
+  --color-background-dim-neutral-default:   rgba(0,0,0,.10);
+  --color-background-dim-neutral-hover:     rgba(0,0,0,.15);
+  --color-foreground-emphasis:              var(--color-solid-grey-99);
+  --color-foreground-default:               var(--color-solid-grey-80);
+  --color-foreground-subtle:                var(--color-solid-grey-70);
+  --color-foreground-solid-accent-default:  var(--color-brand-60);
+  --color-foreground-solid-accent-strong:   var(--color-brand-70);
+  --color-foreground-solid-accent-subtle:   var(--color-brand-40);
+  --color-foreground-invert:                var(--color-solid-grey-0);
+  --color-border-default:                   rgba(0,0,0,.10);
+  /* map surfaces */
+  --color-map-water: var(--color-non-brand-placeholder);
+  --color-map-land:  var(--color-solid-grey-0);
+  --color-map-coast: var(--color-solid-grey-40);
+  /* primary button: dark surface + bright accent text */
+  --color-button-primary-fg: var(--color-brand-20);
+}
+
+/* ---------- 3. TYPOGRAPHY HELPERS ---------- */
+
+.h-typo-headline-l  { font-family: var(--typography-font-families-font-1); font-weight: 300; font-size: 3.2rem; line-height: 1.3; }
+.h-typo-headline-m  { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 2.4rem; line-height: 1.3; }
+.h-typo-headline-s  { font-family: var(--typography-font-families-font-1); font-weight: 700; font-size: 2rem;   line-height: 1.3; }
+.h-typo-headline-xs { font-family: var(--typography-font-families-font-2); font-weight: 400; font-size: 1.8rem; line-height: 1.3; }
+.h-typo-copy-l      { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1.6rem; line-height: 1.5; }
+.h-typo-copy-m      { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1.4rem; line-height: 1.5; }
+.h-typo-copy-s      { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1.2rem; line-height: 1.3; }
+.h-typo-copy-s-2    { font-family: var(--typography-font-families-font-1); font-weight: 700; font-size: 1.2rem; line-height: 1.3; }
+.h-typo-caption     { font-family: var(--typography-font-families-font-1); font-weight: 400; font-size: 1rem;   line-height: 1.2; }
+.h-typo-link        { font-family: var(--typography-font-families-font-1); font-weight: 600; font-size: 1.6rem; line-height: 1.2; }
+.h-typo-link-s      { font-family: var(--typography-font-families-font-1); font-weight: 600; font-size: 1.4rem; line-height: 1;   letter-spacing: -.1rem; }
+.h-typo-tag         { font-family: var(--typography-font-families-font-1); font-weight: 600; font-size: 1.2rem; line-height: 1.3; letter-spacing: .1rem; }
+
+@media (min-width: 768px) {
+  .h-typo-headline-l { font-size: 3.6rem; } .h-typo-headline-m { font-size: 2.8rem; }
+  .h-typo-headline-s { font-size: 2.4rem; } .h-typo-headline-xs{ font-size: 2rem; }
+  .h-typo-copy-l { font-size: 1.8rem; } .h-typo-copy-m { font-size: 1.6rem; }
+  .h-typo-copy-s { font-size: 1.4rem; } .h-typo-copy-s-2 { font-size: 1.4rem; }
+  .h-typo-caption { font-size: 1.2rem; }
+}
+@media (min-width: 1024px) {
+  .h-typo-headline-l { font-size: 4rem; } .h-typo-headline-m { font-size: 3.2rem; }
+  .h-typo-headline-s { font-size: 2.8rem; } .h-typo-headline-xs{ font-size: 2.2rem; }
+  .h-typo-copy-l { font-size: 2rem; } .h-typo-copy-m { font-size: 1.8rem; }
+  .h-typo-copy-s { font-size: 1.6rem; } .h-typo-copy-s-2 { font-size: 1.6rem; }
+}
+
+/* Spacer helpers */
+.h-s2 { height: var(--s2); } .h-s3 { height: var(--s3); } .h-s4 { height: var(--s4); }
+.h-s5 { height: var(--s5); } .h-s6 { height: var(--s6); } .h-s7 { height: var(--s7); }
+
+/* =================================================================
+   COMPONENTS
+================================================================= */
+
+* { box-sizing: border-box; }
+
+/* Transparent so the embedding CGIAR.org page's background shows through the
+   iframe. The side panel and map canvas set their own surfaces explicitly. */
+html, body { background: transparent; }
+
+body {
+  margin: 0;
+  color: var(--color-foreground-default);
+  font-family: var(--typography-font-families-font-1);
+}
+
+:focus-visible { outline: var(--border-width-medium) solid var(--color-focus); outline-offset: .2rem; }
+
+/* No inline padding — the embedding CGIAR.org container supplies it */
+.container { padding-inline: 0; max-width: 100%; margin-inline: auto; }
+
+/* ---- a-icon ---- */
+.a-icon { width: 1em; height: 1em; display: block; fill: none; stroke: currentColor; stroke-width: 2; flex: none; }
+
+/* ---- a-button ---- */
+.a-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
+  border: var(--border-width-thin) solid transparent;
+  border-radius: var(--dimension-border-radius-button);
+  padding: var(--s3) var(--s5);
+  cursor: pointer; text-decoration: none; transition: background-color .18s, color .18s, border-color .18s;
+}
+.a-button--size-big   { padding: var(--s3) var(--s5); }
+.a-button--size-small { padding: var(--s2) var(--s4); border-radius: var(--dimension-border-radius-button-s); }
+.a-button__icon { display: flex; }
+
+/* primary = invert surface + accent-on-dark foreground */
+.a-button--primary {
+  background: var(--color-background-solid-invert-default);
+  border-color: var(--color-background-solid-invert-default);
+  color: var(--color-button-primary-fg);
+}
+.a-button--primary:hover { background: var(--color-background-solid-invert-strong); border-color: var(--color-background-solid-invert-strong); }
+
+/* secondary = outlined accent */
+.a-button--secondary {
+  background: transparent;
+  border-color: var(--color-foreground-solid-accent-default);
+  color: var(--color-foreground-solid-accent-default);
+}
+.a-button--secondary:hover { background: var(--color-background-dim-neutral-default); }
+
+/* tertiary = quiet */
+.a-button--tertiary { background: var(--color-background-solid-neutral-subtle); color: var(--color-foreground-emphasis); }
+
+.state-a-button--disabled, .a-button[disabled] { opacity: var(--color-opacity-disabled); pointer-events: none; }
+
+/* ---- a-tag ---- */
+.a-tag {
+  display: inline-block; text-transform: uppercase; white-space: nowrap;
+  color: var(--color-foreground-solid-accent-strong);
+  background: var(--color-background-dim-neutral-default);
+  border-radius: var(--dimension-border-radius-button-s);
+  padding: var(--s1) var(--s3);
+}
+.a-tag:empty { display: none; }
+
+/* ---- eyebrow / category label ---- */
+.m-eyebrow { text-transform: uppercase; color: var(--color-foreground-solid-accent-default); margin: 0; }
+.m-eyebrow:empty { display: none; }
+
+/* ---- visually hidden (screen-reader only) ---- */
+.h-visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* =================================================================
+   cms-map — the map module (shared with map.html)
+================================================================= */
+
+.cms-map { padding-block: var(--s6) var(--s7); }
+
+.cms-map__layout { display: grid; grid-template-columns: 1fr 36rem; gap: var(--s5); align-items: stretch; }
+@media (max-width: 860px) { .cms-map__layout { grid-template-columns: 1fr; } }
+
+.cms-map__canvas {
+  position: relative; overflow: hidden; min-height: 48rem;
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-card);
+  background: var(--color-map-water);
+}
+#map { position: absolute; inset: 0; z-index: 1; background: var(--color-map-water); }
+.leaflet-container { font-family: var(--typography-font-families-font-1); background: var(--color-map-water); }
+.leaflet-control-attribution { font-size: 1rem; }
+
+.cms-map__toolbar {
+  position: absolute; top: var(--s4); left: var(--s4); right: var(--s4); z-index: 500;
+  display: flex; justify-content: space-between; align-items: center; gap: var(--s3);
+  pointer-events: none;
+}
+.cms-map__region {
+  pointer-events: auto; background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-button-s);
+  color: var(--color-foreground-emphasis); padding: var(--s2) var(--s3);
+  text-transform: uppercase;
+}
+.cms-map__region:empty { display: none; }
+
+.cms-map__panel {
+  display: flex; flex-direction: column; padding: var(--s6);
+  background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-card);
+}
+.cms-map__panel-title { margin: 0; color: var(--color-foreground-emphasis); }
+.cms-map__panel-text  { margin: 0; color: var(--color-foreground-subtle); }
+.cms-map__panel-title:empty, .cms-map__panel-text:empty { display: none; }
+.cms-map__hint { margin: var(--s4) 0 0; color: var(--color-foreground-subtle); }
+.cms-map__hint:empty { display: none; }
+
+.cms-map__error {
+  padding: var(--s6); border-radius: var(--dimension-border-radius-card);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  color: var(--color-foreground-emphasis); background: var(--color-background-solid-neutral-subtle);
+}
+.cms-map__error code {
+  background: var(--color-background-dim-neutral-default);
+  padding: 0 var(--s1); border-radius: var(--dimension-border-radius-button-s);
+}
+
+/* =================================================================
+   Tier map (choropleth) additions
+================================================================= */
+
+.cms-map__layout--tiers { grid-template-columns: 1fr 40rem; }
+@media (max-width: 860px) {
+  .cms-map__layout--tiers { grid-template-columns: 1fr; }
+  .cms-map__canvas--tiers { min-height: 36rem; }
+}
+
+/* Country shapes: focus is drawn as a map outline (see JS), not a browser box */
+.leaflet-interactive:focus { outline: none; }
+
+.cms-map__canvas-msg {
+  position: absolute; inset: auto var(--s4) var(--s4); z-index: 500; margin: 0;
+  padding: var(--s3); border-radius: var(--dimension-border-radius-button-s);
+  background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  color: var(--color-foreground-emphasis);
+}
+.cms-map__canvas-msg[hidden] { display: none; }
+
+/* tooltip — flat, hairline, no shadow */
+.leaflet-tooltip.m-map-tooltip {
+  font-family: var(--typography-font-families-font-1); font-weight: 600; font-size: 1.3rem;
+  color: var(--color-foreground-emphasis);
+  background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-button-s);
+  box-shadow: none; padding: var(--s1) var(--s2);
+}
+
+/* filter row */
+.m-tier-filter { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+.m-tier-filter__label { margin: 0; color: var(--color-foreground-subtle); text-transform: uppercase; }
+.m-tier-filter .a-button { font-family: inherit; }
+.m-tier-filter .a-button[aria-pressed="true"] {
+  background: var(--color-background-dim-neutral-default);
+  color: var(--color-foreground-solid-accent-strong);
+  border-color: var(--color-foreground-solid-accent-strong);
+}
+
+/* tier list */
+.m-tier-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s2); }
+.m-tier {
+  appearance: none; width: 100%; text-align: left; cursor: pointer;
+  display: flex; flex-direction: column; gap: var(--s1);
+  padding: var(--s3) var(--s4);
+  font-family: inherit; color: var(--color-foreground-default);
+  background: var(--color-background-solid-neutral-strong);
+  border: var(--border-width-thin) solid var(--color-border-default);
+  border-radius: var(--dimension-border-radius-component);
+  transition: background-color .18s, border-color .18s, opacity .18s;
+}
+.m-tier:hover { background: var(--color-background-solid-neutral-default); }
+.m-tier[aria-pressed="true"] {
+  border-color: var(--color-foreground-solid-accent-strong);
+  border-width: var(--border-width-medium);
+  padding: calc(var(--s3) - .1rem) calc(var(--s4) - .1rem);   /* keep size steady as the rule thickens */
+  background: var(--color-background-solid-neutral-default);
+}
+.state-m-tier-list--filtered .m-tier[aria-pressed="false"] { opacity: .65; }
+.m-tier__head { display: flex; align-items: center; gap: var(--s2); }
+.m-tier__swatch {
+  width: 1.6rem; height: 1.6rem; flex: none; border-radius: .3rem;
+  border: var(--border-width-thin) solid var(--color-border-default);
+}
+.m-tier__label { color: var(--color-foreground-emphasis); }
+.m-tier__count { margin-left: auto; }
+.m-tier__desc { color: var(--color-foreground-subtle); }
+.m-tier__desc:empty { display: none; }
+.m-tier__countries { color: var(--color-foreground-default); }
+
+/* selected country */
+.m-selection {
+  border-top: var(--border-width-thin) solid var(--color-border-default);
+  padding-top: var(--s4);
+}
+.m-selection__title { margin: 0; color: var(--color-foreground-emphasis); }
+.m-selection__tier { display: flex; align-items: center; gap: var(--s2); margin: 0; color: var(--color-foreground-default); }
+.m-selection__tier[hidden] { display: none; }
+.state-m-selection--empty .m-selection__title { color: var(--color-foreground-subtle); }
+.m-selection__info { list-style: none; margin: var(--s2) 0 0; padding: 0; color: var(--color-foreground-subtle); }
+.m-selection__info:empty { display: none; }
+.m-selection__info a { color: var(--color-foreground-solid-accent-default); }
+
+.cms-map__disclaimer { margin: var(--s3) 0 0; color: var(--color-foreground-subtle); }
+.cms-map__disclaimer:empty { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .m-tier { transition: none; }
+}
+</style>
+</head>
+
+<body data-area="light">
+<div class="cms-map container">
+
+  <div class="cms-map__layout cms-map__layout--tiers" id="layout">
+
+    <div class="cms-map__canvas cms-map__canvas--tiers" id="mapCanvas">
+      <div class="cms-map__toolbar">
+        <span class="cms-map__region h-typo-tag" id="regionTag"></span>
+      </div>
+      <div id="map"></div>
+      <p class="cms-map__canvas-msg h-typo-copy-s" id="mapMsg" role="status" hidden></p>
+    </div>
+
+    <aside class="cms-map__panel" id="sidePanel">
+      <p class="m-eyebrow h-typo-tag" id="hdrEyebrow"></p>
+      <div class="h-s2"></div>
+      <h1 class="cms-map__panel-title h-typo-headline-s" id="hdrTitle"></h1>
+      <div class="h-s2"></div>
+      <p class="cms-map__panel-text h-typo-copy-m" id="hdrSub"></p>
+      <div class="h-s5"></div>
+
+      <div class="m-tier-filter">
+        <p class="m-tier-filter__label h-typo-tag" id="filterLabel"></p>
+        <button type="button" class="a-button a-button--secondary a-button--size-small h-typo-link-s"
+                id="tierAll" aria-pressed="true"></button>
+      </div>
+      <div class="h-s3"></div>
+      <ul class="m-tier-list" id="tierList" aria-labelledby="filterLabel"></ul>
+      <div class="h-s5"></div>
+
+      <div class="m-selection" id="selection" aria-live="polite">
+        <p class="m-selection__tier h-typo-copy-s-2" id="selTier" hidden>
+          <span class="m-tier__swatch" id="selSwatch"></span><span id="selTierText"></span>
+        </p>
+        <div class="h-s2"></div>
+        <h2 class="m-selection__title h-typo-copy-l" id="selTitle"></h2>
+        <ul class="m-selection__info h-typo-copy-s" id="selInfo"></ul>
+      </div>
+
+      <p class="cms-map__hint h-typo-caption" id="sp-hint"></p>
+    </aside>
+
+  </div>
+  <p class="cms-map__disclaimer h-typo-caption" id="disclaimer"></p>
+
+  <div class="h-visually-hidden" id="srSummary"></div>
+</div>
+
+<script>
+/* =================================================================
+   GENERIC TIER-MAP ENGINE (choropleth) — no content lives in this file.
+   Point it at a JSON file:  tier-map.html?data=data/sfp.json
+   See README.md, "Tier map (choropleth)", for the JSON format.
+================================================================= */
+
+const $ = id => document.getElementById(id);
+const DATA_URL = new URLSearchParams(location.search).get('data') || 'data/sfp.json';
+const GEO_URL  = 'https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json';
+
+/* Only http(s) links are honoured — blocks javascript: URLs from a data file */
+function safeUrl(u) {
+  if (!u) return '';
+  try {
+    const p = new URL(u, location.href);
+    return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : '';
+  } catch { return ''; }
+}
+
+/* Colours from the data file must be plain hex — nothing else reaches a style */
+function safeColor(c) { return /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(c || '') ? c : ''; }
+
+/* Optional "theme" keys in the JSON → the semantic tokens they override */
+const THEME_TOKENS = {
+  accent:       '--color-foreground-solid-accent-default',
+  accentStrong: '--color-foreground-solid-accent-strong',
+  invert:       '--color-background-solid-invert-default'
+};
+
+function showError(msg) {
+  $('layout').innerHTML = '<div class="cms-map__error h-typo-copy-m">' + msg + '</div>';
+  postHeight();
+}
+
+Promise.all([
+  fetch(DATA_URL).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }),
+  fetch(GEO_URL).then(r => r.ok ? r.json() : null).catch(() => null)
+])
+  .then(([cfg, geo]) => initMap(cfg, geo))
+  .catch(err => showError(
+    '<strong>Map could not load.</strong><br>Could not read <code>' +
+    DATA_URL.replace(/</g, '&lt;') + '</code> (' + String(err.message).replace(/</g, '&lt;') + ').<br>' +
+    'Check the <code>?data=</code> path and that the JSON is valid.'
+  ));
+
+function initMap(cfg, geo) {
+  const hdr   = cfg.header || {};
+  const mcfg  = cfg.map || {};
+  const ui    = cfg.ui || {};
+  const names = cfg.countryNames || {};
+  const info  = cfg.countryInfo || {};
+  const tiers = (Array.isArray(cfg.tiers) ? cfg.tiers : [])
+    .filter(t => t && Array.isArray(t.countries));
+
+  if (!tiers.length) return showError('<strong>Map could not load.</strong><br>The data file contains no <code>tiers</code>.');
+
+  /* ---- Theme overrides (optional) ---- */
+  const theme = cfg.theme || {};
+  Object.keys(THEME_TOKENS).forEach(k => {
+    const c = safeColor(theme[k]);
+    if (c) document.body.style.setProperty(THEME_TOKENS[k], c);
+  });
+  const css = getComputedStyle(document.body);
+  const token = (name, fallback) => css.getPropertyValue(name).trim() || fallback;
+  const LAND     = token('--color-map-land', '#ffffff');
+  const COAST    = token('--color-map-coast', '#d9d9d9');
+  const EMPHASIS = token('--color-foreground-emphasis', '#080808');
+  const FOCUS    = token('--color-focus', '#3c00ff');
+  const ACCENT   = token('--color-foreground-solid-accent-default', '#008c6b');
+
+  /* ---- Header (inside the panel) ---- */
+  $('hdrEyebrow').textContent = hdr.eyebrow  || '';
+  $('hdrTitle').textContent   = hdr.title    || '';
+  $('hdrSub').textContent     = hdr.subtitle || '';
+  if (hdr.title) document.title = hdr.title;
+  $('regionTag').textContent  = mcfg.regionLabel || '';
+  $('sp-hint').textContent    = ui.hint || '';
+  $('disclaimer').textContent = ui.disclaimer || '';
+  $('filterLabel').textContent = ui.filterLabel || 'Filter by tier';
+  $('tierAll').textContent     = ui.allLabel || 'All tiers';
+
+  /* ---- Lookups + validation ---- */
+  const geoById = {};
+  ((geo && geo.features) || []).forEach(f => { if (f && f.id) geoById[f.id] = f; });
+  const nameOf = iso => names[iso] ||
+    (geoById[iso] && geoById[iso].properties && geoById[iso].properties.name) || iso;
+
+  const tierOf = {};                       // ISO3 → tier index (first listing wins)
+  const members = tiers.map(() => []);     // tier index → ISO3[] in the data's order
+  tiers.forEach((t, ti) => t.countries.forEach(iso => {
+    if (iso in tierOf) {
+      console.warn('[tier-map] ' + iso + ' is listed in both "' + (tiers[tierOf[iso]].label || tierOf[iso]) +
+                   '" and "' + (t.label || ti) + '". Keeping the first.');
+      return;
+    }
+    tierOf[iso] = ti;
+    members[ti].push(iso);
+    if (geo && !geoById[iso]) console.warn('[tier-map] ' + iso + ' was not found in the boundaries file and will not be drawn.');
+  }));
+  const tierColor = tiers.map(t => safeColor(t.color) || ACCENT);
+  const countLabel = n => n + (n === 1 ? ' country' : ' countries');
+
+  /* ---- Screen-reader summary ---- */
+  const sr = $('srSummary');
+  sr.textContent = '';
+  const srTitle = document.createElement('h2');
+  srTitle.textContent = (hdr.title ? hdr.title + ': ' : '') + 'summary of tiers and countries';
+  sr.appendChild(srTitle);
+  tiers.forEach((t, ti) => {
+    const p = document.createElement('p');
+    p.textContent = (t.label || '') + (t.description ? ', ' + t.description : '') + ', ' +
+      countLabel(members[ti].length) + ': ' + members[ti].map(nameOf).join(', ') + '.';
+    sr.appendChild(p);
+  });
+
+  /* ---- Tier buttons ---- */
+  const list = $('tierList');
+  const tierBtns = tiers.map((t, ti) => {
+    const li = document.createElement('li');
+    const b  = document.createElement('button');
+    b.type = 'button'; b.className = 'm-tier'; b.setAttribute('aria-pressed', 'false');
+
+    const head = document.createElement('span'); head.className = 'm-tier__head';
+    const sw = document.createElement('span'); sw.className = 'm-tier__swatch';
+    sw.style.backgroundColor = tierColor[ti];
+    const lb = document.createElement('span'); lb.className = 'm-tier__label h-typo-copy-s-2';
+    lb.textContent = t.label || '';
+    const ct = document.createElement('span'); ct.className = 'm-tier__count a-tag h-typo-tag';
+    ct.textContent = countLabel(members[ti].length);
+    head.append(sw, lb, ct);
+
+    const ds = document.createElement('span'); ds.className = 'm-tier__desc h-typo-copy-s';
+    ds.textContent = t.description || '';
+    const cs = document.createElement('span'); cs.className = 'm-tier__countries h-typo-copy-s';
+    cs.textContent = members[ti].map(nameOf).join(' · ');
+
+    b.append(head, ds, cs);
+    b.addEventListener('click', () => setTier(ti));
+    li.appendChild(b); list.appendChild(li);
+    return b;
+  });
+  $('tierAll').addEventListener('click', () => setTier(null));
+
+  /* ---- Map ---- */
+  const map = L.map('map', {
+    center: mcfg.center || [10, 40],
+    zoom: mcfg.zoom || 3,
+    zoomSnap: 0.25, minZoom: 1, maxZoom: 7,
+    zoomControl: true, scrollWheelZoom: false,
+    maxBounds: [[-62, -200], [83, 200]], maxBoundsViscosity: 1.0
+  });
+  map.zoomControl.setPosition('bottomright');
+  map.createPane('outline').style.zIndex = 450;   // selection/focus rings above all countries
+  map.getPane('outline').style.pointerEvents = 'none';
+
+  L.control.attribution({ position: 'bottomleft', prefix: false })
+    .addAttribution('Boundaries: <a href="https://www.naturalearthdata.com/">Natural Earth</a>')
+    .addTo(map);
+
+  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let activeTier = null, selected = null, focused = null;
+  const layers = {};
+  const tierBounds = tiers.map(() => L.latLngBounds([]));
+  const allBounds = L.latLngBounds([]);
+
+  function styleFor(iso) {
+    const ti = tierOf[iso];
+    const dim = activeTier !== null && activeTier !== ti && iso !== selected;
+    return {
+      fillColor: tierColor[ti], fillOpacity: dim ? 0.2 : 1,
+      color: LAND, weight: 0.8, opacity: 1
+    };
+  }
+
+  const outlines = {};
+  function setOutline(kind, iso, color) {
+    if (outlines[kind]) { map.removeLayer(outlines[kind]); outlines[kind] = null; }
+    if (iso && geoById[iso]) {
+      outlines[kind] = L.geoJSON(geoById[iso], {
+        pane: 'outline', interactive: false,
+        style: { fill: false, color, weight: kind === 'focus' ? 3 : 2.5, opacity: 1 }
+      }).addTo(map);
+    }
+  }
+
+  function restyle() {
+    Object.keys(layers).forEach(iso => layers[iso].setStyle(styleFor(iso)));
+    setOutline('selected', selected, EMPHASIS);
+    setOutline('focus', focused, FOCUS);
+  }
+
+  function fitTo(bounds) {
+    if (!bounds.isValid()) return;
+    map.fitBounds(bounds, { padding: [24, 24], maxZoom: mcfg.fitMaxZoom || 5, animate: !reduceMotion });
+  }
+
+  function setTier(ti) {
+    activeTier = (ti === null || ti === activeTier) ? null : ti;
+    tierBtns.forEach((b, i) => b.setAttribute('aria-pressed', String(i === activeTier)));
+    $('tierAll').setAttribute('aria-pressed', String(activeTier === null));
+    list.classList.toggle('state-m-tier-list--filtered', activeTier !== null);
+    restyle();
+    fitTo(activeTier === null ? allBounds : tierBounds[activeTier]);
+  }
+
+  function renderSelection(iso) {
+    const has = iso != null;
+    $('selTier').hidden = !has;
+    $('selection').classList.toggle('state-m-selection--empty', !has);
+    $('selInfo').textContent = '';
+    if (!has) {
+      $('selTitle').textContent = ui.selectPrompt || 'Select a country on the map to see its tier.';
+      return;
+    }
+    const t = tiers[tierOf[iso]];
+    $('selSwatch').style.backgroundColor = tierColor[tierOf[iso]];
+    $('selTierText').textContent = (t.label || '') + (t.description ? ' · ' + t.description : '');
+    $('selTitle').textContent = nameOf(iso);
+    /* countryInfo[ISO3]: array of strings or { "text", "url" } objects */
+    const lines = Array.isArray(info[iso]) ? info[iso] : (info[iso] ? [info[iso]] : []);
+    lines.forEach(line => {
+      const li = document.createElement('li');
+      const text = typeof line === 'string' ? line : (line && line.text) || '';
+      const url  = typeof line === 'object' && line ? safeUrl(line.url) : '';
+      if (url) {
+        const a = document.createElement('a');
+        a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = text || url;
+        li.appendChild(a);
+      } else li.textContent = text;
+      if (li.textContent) $('selInfo').appendChild(li);
+    });
+  }
+
+  function selectCountry(iso) {
+    selected = (iso === selected) ? null : iso;
+    Object.keys(layers).forEach(k => {
+      const el = layers[k].getElement && layers[k].getElement();
+      if (el) el.setAttribute('aria-pressed', String(k === selected));
+    });
+    restyle();
+    renderSelection(selected);
+  }
+
+  /* Fixed panel height: measure the tallest selection state once so selecting a
+     country never resizes the iframe (same approach as map.html). */
+  function lockPanelHeight() {
+    const panel = $('sidePanel');
+    panel.style.minHeight = '';
+    let max = 0;
+    [null].concat(Object.keys(tierOf)).forEach(iso => { renderSelection(iso); max = Math.max(max, panel.scrollHeight); });
+    renderSelection(selected);
+    panel.style.minHeight = (max + 2) + 'px';
+    map.invalidateSize({ animate: false });
+  }
+
+  /* ---- Layers ---- */
+  if (!geo) {
+    $('mapMsg').textContent = 'Country boundaries could not load. The tier lists in the panel are complete.';
+    $('mapMsg').hidden = false;
+  } else {
+    L.geoJSON(geo, {
+      interactive: false,
+      style: { fillColor: LAND, fillOpacity: 1, color: COAST, weight: 0.8, opacity: 1 }
+    }).addTo(map);
+
+    /* priority countries, in tier order then data order → also the keyboard order */
+    const feats = [];
+    members.forEach(isos => isos.forEach(iso => { if (geoById[iso]) feats.push(geoById[iso]); }));
+
+    L.geoJSON({ type: 'FeatureCollection', features: feats }, {
+      style: f => styleFor(f.id),
+      onEachFeature: (f, layer) => {
+        const iso = f.id, ti = tierOf[iso];
+        layers[iso] = layer;
+        tierBounds[ti].extend(layer.getBounds());
+        allBounds.extend(layer.getBounds());
+        layer.bindTooltip(nameOf(iso) + ' · ' + (tiers[ti].label || ''), {
+          sticky: true, direction: 'top', offset: [0, -8], className: 'm-map-tooltip'
+        });
+        layer.on('click', () => selectCountry(iso));
+      }
+    }).addTo(map);
+
+    Object.keys(layers).forEach(iso => {
+      const layer = layers[iso], el = layer.getElement();
+      if (!el) return;
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-pressed', 'false');
+      el.setAttribute('aria-label', nameOf(iso) + ', ' + (tiers[tierOf[iso]].label || ''));
+      el.setAttribute('data-iso', iso);
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCountry(iso); }
+      });
+      el.addEventListener('focus', () => {
+        focused = iso; restyle();
+        layer.openTooltip(layer.getBounds().getCenter());
+      });
+      el.addEventListener('blur', () => {
+        if (focused === iso) { focused = null; restyle(); }
+        layer.closeTooltip();
+      });
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && selected) selectCountry(selected);
+  });
+
+  if (mcfg.fitToTiers !== false && allBounds.isValid()) map.fitBounds(allBounds, { padding: [24, 24], animate: false });
+
+  /* Panel height drives the map height (grid stretch), so re-fit after every re-measure */
+  function relayout() {
+    lockPanelHeight();
+    if (mcfg.fitToTiers !== false || activeTier !== null) {
+      map.fitBounds(activeTier === null ? allBounds : tierBounds[activeTier],
+                    { padding: [24, 24], maxZoom: mcfg.fitMaxZoom || 5, animate: false });
+    }
+    postHeight();
+  }
+
+  map.whenReady(() => {
+    relayout();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+    let rt;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(relayout, 200); });
+  });
+}
+
+/* ---- Responsive embed: report height to the parent iframe (same message as map.html) ---- */
+let lastPostedHeight = 0;
+function postHeight() {
+  const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+  if (Math.abs(h - lastPostedHeight) < 2) return;   // ignore sub-pixel churn
+  lastPostedHeight = h;
+  parent.postMessage({ type: 'apac-map-height', height: h }, '*');
+}
+window.addEventListener('load', postHeight);
+window.addEventListener('resize', postHeight);
+if (window.ResizeObserver) new ResizeObserver(postHeight).observe(document.body);
+</script>
+</body>
+</html>
