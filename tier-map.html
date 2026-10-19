@@ -419,7 +419,14 @@ body {
 ================================================================= */
 
 const $ = id => document.getElementById(id);
-const DATA_URL = new URLSearchParams(location.search).get('data') || 'data/sfp.json';
+/* ?data= must be a same-origin .json file; anything else falls back to the default */
+const DATA_URL = (function (v) {
+  if (!v) return 'data/sfp.json';
+  try {
+    const u = new URL(v, location.href);
+    return (u.origin === location.origin && /\.json$/i.test(u.pathname)) ? v : 'data/sfp.json';
+  } catch { return 'data/sfp.json'; }
+})(new URLSearchParams(location.search).get('data'));
 const GEO_URL  = 'https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json';
 
 /* Only http(s) links are honoured — blocks javascript: URLs from a data file */
@@ -688,7 +695,10 @@ function initMap(cfg, geo) {
         layers[iso] = layer;
         tierBounds[ti].extend(layer.getBounds());
         allBounds.extend(layer.getBounds());
-        layer.bindTooltip(nameOf(iso) + ' · ' + (tiers[ti].label || ''), {
+        /* a DOM node, not a string: Leaflet would parse a string as HTML */
+        const tip = document.createElement('span');
+        tip.textContent = nameOf(iso) + ' · ' + (tiers[ti].label || '');
+        layer.bindTooltip(tip, {
           sticky: true, direction: 'top', offset: [0, -8], className: 'm-map-tooltip'
         });
         layer.on('click', () => selectCountry(iso));

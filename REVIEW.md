@@ -103,3 +103,9 @@ Not done: no screen-reader run (VoiceOver/NVDA) and no Firefox or Safari run.
 3. **Boundary disclaimer wording.** `ui.disclaimer` is empty. Morocco/Western Sahara differs between the deck and the GeoJSON, and other disputed borders may not match the line CGIAR uses.
 4. **Country click → coordinator info.** `countryInfo` is supported but empty, since coordinators live in Drupal for now.
 5. **Panel header.** The brief puts the eyebrow, title and intro in the panel, and the Drupal page has its own "Where We Work" heading above the embed. Should the panel title be dropped to avoid saying it twice? Removing `header.title` from the JSON hides it.
+
+## Security follow-up (automated review after the first commit)
+
+- **Fixed: tooltip HTML injection.** Leaflet parses a string passed to `bindTooltip` as HTML. Country names and tier labels come from the JSON and the third-party GeoJSON, so the tooltip is now a `<span>` filled with `textContent`. Tested with a tier label of `<img src=x onerror=alert(1)>` and a name of `<b>Kenya</b>`: both show as plain text, no `<img>` is created and no dialog opens.
+- **Fixed: `?data=` is now limited to same-origin `.json` files.** Anything else falls back to `data/sfp.json`. Tested with `?data=https://example.com/x.json`, which loads the SFP data instead.
+- **Open (not changed): the GeoJSON loads from `johan/world.geo.json@master` on jsDelivr.** This is the same unpinned URL `map.html` uses. With the tooltip fix, a tampered file can no longer inject script, but it could still change the shapes. Pinning a commit hash or hosting the file in this repo would close that gap for both maps. That touches `map.html`, so it is left for a separate decision.
