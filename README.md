@@ -230,6 +230,7 @@ Only `tiers` is required.
       "label": "Tier 1",
       "description": "Core priorities",  // optional sub-label
       "color": "#03352a",                // hex only, anything else falls back to the accent
+      "stroke": "#a88a46",               // optional outline (hex), useful for pale fills
       "countries": ["ETH", "KEN"]        // ISO 3166-1 alpha-3, matched to the GeoJSON "id"
     }
   ],

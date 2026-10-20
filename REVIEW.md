@@ -22,37 +22,48 @@ What differs from the brief's JSON proposal (all additive and optional):
 
 ## Colours
 
-The brief asked for CGIAR brand-token placeholders. The requester then asked to use the
-**SFP sub-brand palette from the email-signature screenshot** instead. Values were sampled
-from the screenshot's pixels:
+**Current (19 Oct 2026): tier legend supplied by the requester.** Values were sampled from the
+legend image's swatches. They replace the first palette, which came from the email-signature
+screenshot (see "Earlier palette" below). The requester approved publishing them as they are.
 
-| Role | Hex | Source |
-|---|---|---|
-| Tier 1 (strongest) | `#03352a` | SFP logo block. Identical to CGIAR token `--color-brand-80` (`#033529`) to within 1 step. |
-| Tier 2 | `#2c6a4f` | "SFP Communications Lead" green in the signature. Not a CGIAR ramp token. |
-| Tier 3 (lightest) | `#8a8160` | Darkened from the signature's khaki `#a9a07d`. **Not the exact brand khaki**, see contrast below. |
-| Panel accent (`theme.accent`) | `#2c6a4f` | Eyebrow text, links |
-| Panel accent strong (`theme.accentStrong`) | `#03352a` | Pressed tier and "All tiers" rule |
+| Role | Fill | Outline (`stroke`) | Note |
+|---|---|---|---|
+| Tier 1 (strongest) | `#03352a` | white land border | SFP dark green, almost exactly CGIAR `--color-brand-80` (`#033529`) |
+| Tier 2 | `#c9a55a` | white land border | Gold |
+| Tier 3 (lightest) | `#e9dcb8` | `#a88a46` | Cream with a gold outline, as in the legend swatch |
+| Panel accent (`theme.accent`) | `#2c6a4f` | | Unchanged: eyebrow text, links |
+| Panel accent strong (`theme.accentStrong`) | `#03352a` | | Unchanged: pressed tier and "All tiers" rule |
 
-The three tier hex values exist only in `data/sfp.json`. The engine has no hardcoded
-colours outside the copied token layer.
+The engine gained an optional `tiers[].stroke` (hex) for the outline. It is used on the map
+and on the panel swatches. Tier colours live only in `data/sfp.json`.
 
 ### Contrast (WCAG 1.4.11, need ≥ 3:1)
 
 Land is `--color-map-land` `#ffffff`, which is also the panel background. Water is `--color-map-water` `#e2eef1`.
 
-| Fill | vs land / panel `#fff` | vs water `#e2eef1` | Result |
+| Colour | vs land / panel `#fff` | vs water `#e2eef1` | Result |
 |---|---|---|---|
-| Tier 1 `#03352a` | 13.58 | 11.47 | Pass |
-| Tier 2 `#2c6a4f` | 6.40 | 5.40 | Pass |
-| Tier 3 `#8a8160` | 3.90 | 3.29 | Pass |
-| *Brand khaki `#a9a07d` (rejected)* | *2.62* | *2.21* | *Fail* |
+| Tier 1 fill `#03352a` | 13.58 | 11.47 | Pass |
+| Tier 2 fill `#c9a55a` | 2.33 | 1.97 | **Fail** |
+| Tier 3 fill `#e9dcb8` | 1.36 | 1.15 | **Fail** |
+| Tier 3 outline `#a88a46` | 3.29 | 2.78 | Pass vs land, **fail vs water** |
 
-Tier-to-tier contrast: Tier 1 vs 2 is 2.12, Tier 2 vs 3 is 1.64. WCAG does not require this,
-because tier is never conveyed by colour alone (tooltip text, panel lists and the screen-reader
-summary all name the tier). Lightness still runs dark, mid, light in tier order.
+Tier-to-tier: Tier 1 vs 2 is 5.83, Tier 2 vs 3 is 1.71, Tier 3 fill vs its outline is 2.41.
 
-Faded (non-selected tier) countries drop to 20% fill opacity on purpose. Their tier is still in the tooltip and the panel.
+**Known gap, published by decision:** Tier 2 and Tier 3 do not meet 1.4.11 on fill colour.
+Tier 3 is outlined, which meets 3:1 against land but not on coasts against water
+(Madagascar, the Philippines, Morocco and Mozambique's coast). Tier is never conveyed by colour
+alone, since the tooltip text, panel lists and screen-reader summary all name it, so the
+tier information stays accessible. The weak part is seeing the shapes. A fix that keeps
+these fills: a darker outline on both tiers, e.g. `#8a6d2f` or darker. Check the ratio first.
+
+Faded (non-selected tier) countries drop to 20% fill opacity and 40% outline opacity on purpose.
+
+### Earlier palette (signature screenshot, superseded)
+
+Tier 1 `#03352a`, Tier 2 `#2c6a4f` (6.40 / 5.40), Tier 3 `#8a8160`, darkened from the
+signature khaki `#a9a07d` to pass (3.90 / 3.29). All three passed 3:1. This palette was live
+from the first publish until this update.
 
 ## Reference files vs. this brief
 
@@ -98,8 +109,8 @@ Not done: no screen-reader run (VoiceOver/NVDA) and no Firefox or Safari run.
 
 ## Open questions (not decided here)
 
-1. **Final tier colours.** Options: the SFP sub-brand palette used now, CGIAR ramp tokens (director's ask), or the client deck. The deck has a single teal, so it offers no tier colours to match.
-2. **Tier 3 khaki.** The exact signature khaki `#a9a07d` fails 3:1. This build darkens it to `#8a8160`. The alternative is to keep the exact khaki and add a darker outline stroke for contrast.
+1. **Final tier colours.** The requester's legend palette (green / gold / cream) is now live. The director's earlier ask was to stick to CGIAR brand colours, so confirm this palette is signed off.
+2. **Tier 2 / Tier 3 contrast.** The current gold and cream fills fail 3:1, and the Tier 3 outline fails against water. They were published as is by decision. Darker outlines would fix it without changing the fills (see Colours).
 3. **Boundary disclaimer wording.** `ui.disclaimer` is empty. Morocco/Western Sahara differs between the deck and the GeoJSON, and other disputed borders may not match the line CGIAR uses.
 4. **Country click → coordinator info.** `countryInfo` is supported but empty, since coordinators live in Drupal for now.
 5. **Panel header.** The brief puts the eyebrow, title and intro in the panel, and the Drupal page has its own "Where We Work" heading above the embed. Should the panel title be dropped to avoid saying it twice? Removing `header.title` from the JSON hides it.

@@ -518,7 +518,8 @@ function initMap(cfg, geo) {
     members[ti].push(iso);
     if (geo && !geoById[iso]) console.warn('[tier-map] ' + iso + ' was not found in the boundaries file and will not be drawn.');
   }));
-  const tierColor = tiers.map(t => safeColor(t.color) || ACCENT);
+  const tierColor  = tiers.map(t => safeColor(t.color) || ACCENT);
+  const tierStroke = tiers.map(t => safeColor(t.stroke));   // optional outline, e.g. for pale fills
   const countLabel = n => n + (n === 1 ? ' country' : ' countries');
 
   /* ---- Screen-reader summary ---- */
@@ -544,6 +545,7 @@ function initMap(cfg, geo) {
     const head = document.createElement('span'); head.className = 'm-tier__head';
     const sw = document.createElement('span'); sw.className = 'm-tier__swatch';
     sw.style.backgroundColor = tierColor[ti];
+    if (tierStroke[ti]) sw.style.borderColor = tierStroke[ti];
     const lb = document.createElement('span'); lb.className = 'm-tier__label h-typo-copy-s-2';
     lb.textContent = t.label || '';
     const ct = document.createElement('span'); ct.className = 'm-tier__count a-tag h-typo-tag';
@@ -589,7 +591,7 @@ function initMap(cfg, geo) {
     const dim = activeTier !== null && activeTier !== ti && iso !== selected;
     return {
       fillColor: tierColor[ti], fillOpacity: dim ? 0.2 : 1,
-      color: LAND, weight: 0.8, opacity: 1
+      color: tierStroke[ti] || LAND, weight: tierStroke[ti] ? 1.2 : 0.8, opacity: dim ? 0.4 : 1
     };
   }
 
@@ -635,6 +637,7 @@ function initMap(cfg, geo) {
     }
     const t = tiers[tierOf[iso]];
     $('selSwatch').style.backgroundColor = tierColor[tierOf[iso]];
+    $('selSwatch').style.borderColor = tierStroke[tierOf[iso]] || '';
     $('selTierText').textContent = (t.label || '') + (t.description ? ' · ' + t.description : '');
     $('selTitle').textContent = nameOf(iso);
     /* countryInfo[ISO3]: array of strings or { "text", "url" } objects */

@@ -29,14 +29,15 @@
       "id": "tier-2",
       "label": "Tier 2",
       "description": "Strategic priorities",
-      "color": "#2c6a4f",
+      "color": "#c9a55a",
       "countries": ["TZA", "BGD", "COD", "EGY", "UGA", "IND", "ZMB", "VNM", "GHA"]
     },
     {
       "id": "tier-3",
       "label": "Tier 3",
       "description": "Emerging priorities",
-      "color": "#8a8160",
+      "color": "#e9dcb8",
+      "stroke": "#a88a46",
       "countries": ["MOZ", "MDG", "PHL", "MAR"]
     }
   ],
