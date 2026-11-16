@@ -217,8 +217,6 @@ Only `tiers` is required.
   },
 
   "ui": {
-    "hint":         "Select a tier to highlight its countries.",
-    "selectPrompt": "Select a country on the map to see its tier.",
     "filterLabel":  "Filter by tier",  // default shown
     "allLabel":     "All tiers",       // default shown
     "disclaimer":   ""                 // small line under the map, e.g. boundaries note
@@ -235,14 +233,7 @@ Only `tiers` is required.
     }
   ],
 
-  "countryNames": { "VNM": "Viet Nam" },  // overrides the GeoJSON name
-
-  "countryInfo": {                     // optional extra lines when a country is selected
-    "KEN": [
-      "Country Coordinator: Name Surname",
-      { "text": "Centre page", "url": "https://…" }   // links must be http(s)
-    ]
-  }
+  "countryNames": { "VNM": "Viet Nam" }   // overrides the GeoJSON name
 }
 ```
 
@@ -251,7 +242,7 @@ Only `tiers` is required.
 - Click a tier to keep its countries at full colour, fade the others and zoom to that
   tier. Click it again, or **All tiers**, to reset.
 - Hover or keyboard-focus a country for a "Country · Tier N" tooltip. Click it or press
-  Enter to show it in the panel. Escape clears the selection.
+  Enter to outline it on the map. Escape clears the selection.
 - Tier buttons and country shapes are real buttons with `aria-pressed`. A visually hidden
   summary lists every tier and country for screen readers.
 - On load the engine logs a console warning for any ISO3 code missing from the GeoJSON

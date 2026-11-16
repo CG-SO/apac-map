@@ -255,8 +255,6 @@ body {
 .cms-map__panel-title { margin: 0; color: var(--color-foreground-emphasis); }
 .cms-map__panel-text  { margin: 0; color: var(--color-foreground-subtle); }
 .cms-map__panel-title:empty, .cms-map__panel-text:empty { display: none; }
-.cms-map__hint { margin: var(--s4) 0 0; color: var(--color-foreground-subtle); }
-.cms-map__hint:empty { display: none; }
 
 .cms-map__error {
   padding: var(--s6); border-radius: var(--dimension-border-radius-card);
@@ -341,18 +339,6 @@ body {
 .m-tier__desc:empty { display: none; }
 .m-tier__countries { color: var(--color-foreground-default); }
 
-/* selected country */
-.m-selection {
-  border-top: var(--border-width-thin) solid var(--color-border-default);
-  padding-top: var(--s4);
-}
-.m-selection__title { margin: 0; color: var(--color-foreground-emphasis); }
-.m-selection__tier { display: flex; align-items: center; gap: var(--s2); margin: 0; color: var(--color-foreground-default); }
-.m-selection__tier[hidden] { display: none; }
-.state-m-selection--empty .m-selection__title { color: var(--color-foreground-subtle); }
-.m-selection__info { list-style: none; margin: var(--s2) 0 0; padding: 0; color: var(--color-foreground-subtle); }
-.m-selection__info:empty { display: none; }
-.m-selection__info a { color: var(--color-foreground-solid-accent-default); }
 
 .cms-map__disclaimer { margin: var(--s3) 0 0; color: var(--color-foreground-subtle); }
 .cms-map__disclaimer:empty { display: none; }
@@ -393,16 +379,6 @@ body {
       <ul class="m-tier-list" id="tierList" aria-labelledby="filterLabel"></ul>
       <div class="h-s5"></div>
 
-      <div class="m-selection" id="selection" aria-live="polite">
-        <p class="m-selection__tier h-typo-copy-s-2" id="selTier" hidden>
-          <span class="m-tier__swatch" id="selSwatch"></span><span id="selTierText"></span>
-        </p>
-        <div class="h-s2"></div>
-        <h2 class="m-selection__title h-typo-copy-l" id="selTitle"></h2>
-        <ul class="m-selection__info h-typo-copy-s" id="selInfo"></ul>
-      </div>
-
-      <p class="cms-map__hint h-typo-caption" id="sp-hint"></p>
     </aside>
 
   </div>
@@ -469,7 +445,6 @@ function initMap(cfg, geo) {
   const mcfg  = cfg.map || {};
   const ui    = cfg.ui || {};
   const names = cfg.countryNames || {};
-  const info  = cfg.countryInfo || {};
   const tiers = (Array.isArray(cfg.tiers) ? cfg.tiers : [])
     .filter(t => t && Array.isArray(t.countries));
 
@@ -495,7 +470,6 @@ function initMap(cfg, geo) {
   $('hdrSub').textContent     = hdr.subtitle || '';
   if (hdr.title) document.title = hdr.title;
   $('regionTag').textContent  = mcfg.regionLabel || '';
-  $('sp-hint').textContent    = ui.hint || '';
   $('disclaimer').textContent = ui.disclaimer || '';
   $('filterLabel').textContent = ui.filterLabel || 'Filter by tier';
   $('tierAll').textContent     = ui.allLabel || 'All tiers';
@@ -626,35 +600,6 @@ function initMap(cfg, geo) {
     fitTo(activeTier === null ? allBounds : tierBounds[activeTier]);
   }
 
-  function renderSelection(iso) {
-    const has = iso != null;
-    $('selTier').hidden = !has;
-    $('selection').classList.toggle('state-m-selection--empty', !has);
-    $('selInfo').textContent = '';
-    if (!has) {
-      $('selTitle').textContent = ui.selectPrompt || 'Select a country on the map to see its tier.';
-      return;
-    }
-    const t = tiers[tierOf[iso]];
-    $('selSwatch').style.backgroundColor = tierColor[tierOf[iso]];
-    $('selSwatch').style.borderColor = tierStroke[tierOf[iso]] || '';
-    $('selTierText').textContent = (t.label || '') + (t.description ? ' · ' + t.description : '');
-    $('selTitle').textContent = nameOf(iso);
-    /* countryInfo[ISO3]: array of strings or { "text", "url" } objects */
-    const lines = Array.isArray(info[iso]) ? info[iso] : (info[iso] ? [info[iso]] : []);
-    lines.forEach(line => {
-      const li = document.createElement('li');
-      const text = typeof line === 'string' ? line : (line && line.text) || '';
-      const url  = typeof line === 'object' && line ? safeUrl(line.url) : '';
-      if (url) {
-        const a = document.createElement('a');
-        a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = text || url;
-        li.appendChild(a);
-      } else li.textContent = text;
-      if (li.textContent) $('selInfo').appendChild(li);
-    });
-  }
-
   function selectCountry(iso) {
     selected = (iso === selected) ? null : iso;
     Object.keys(layers).forEach(k => {
@@ -662,18 +607,9 @@ function initMap(cfg, geo) {
       if (el) el.setAttribute('aria-pressed', String(k === selected));
     });
     restyle();
-    renderSelection(selected);
   }
 
-  /* Fixed panel height: measure the tallest selection state once so selecting a
-     country never resizes the iframe (same approach as map.html). */
   function lockPanelHeight() {
-    const panel = $('sidePanel');
-    panel.style.minHeight = '';
-    let max = 0;
-    [null].concat(Object.keys(tierOf)).forEach(iso => { renderSelection(iso); max = Math.max(max, panel.scrollHeight); });
-    renderSelection(selected);
-    panel.style.minHeight = (max + 2) + 'px';
     map.invalidateSize({ animate: false });
   }
 

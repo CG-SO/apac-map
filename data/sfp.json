@@ -13,8 +13,6 @@
     "fitToTiers": true
   },
   "ui": {
-    "hint": "Select a tier to highlight its countries.",
-    "selectPrompt": "Select a country on the map to see its tier.",
     "disclaimer": ""
   },
   "tiers": [
@@ -45,6 +43,5 @@
     "VNM": "Viet Nam",
     "COD": "Democratic Republic of the Congo",
     "TZA": "Tanzania"
-  },
-  "countryInfo": {}
+  }
 }
